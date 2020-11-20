@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "33541349619",
+    "firebase_url": "https://codinginventoryapp.firebaseio.com",
+    "project_id": "codinginventoryapp",
+    "storage_bucket": "codinginventoryapp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:33541349619:android:91468b156db36b07281786",
+        "android_client_info": {
+          "package_name": "com.example.coding_inventory"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "33541349619-t7b15schqojeevl4u227h2cvctr2v3cu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD-L0jNthw-Hj83sL9vRlP_Zrjn9YkL078"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "33541349619-t7b15schqojeevl4u227h2cvctr2v3cu.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
