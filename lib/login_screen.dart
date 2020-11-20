@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 
 
+
 class LoginPage extends StatefulWidget {
   @override
   _LoginPageState createState() => _LoginPageState();
@@ -18,6 +19,7 @@ class _LoginPageState extends State<LoginPage> {
   GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final formKey = new GlobalKey<FormState>();
+
 
   String _email;
   String _password;
@@ -36,16 +38,31 @@ class _LoginPageState extends State<LoginPage> {
 
   void validateAndSubmit() async {
     if (validateAndSave()){
-      UserCredential user = await FirebaseAuth.instance.signInWithEmailAndPassword(email: _email, password: _password);
+      try {
+        if (_formType == FormType.login) {
+          UserCredential user = await FirebaseAuth.instance
+              .signInWithEmailAndPassword(email: _email, password: _password);
+        } else {
+          UserCredential user = await FirebaseAuth.instance
+              .createUserWithEmailAndPassword(
+              email: _email, password: _password);
+          print("Em $_email and pass $_password");
+        }
+      }
+      catch(e){
+        print('Error $e');
+      }
     }
   }
 
   void moveToRegister(){
+    formKey.currentState.reset();
     setState(() {
       _formType = FormType.registration;
     });
   }
   void moveToLogin(){
+    formKey.currentState.reset();
     setState(() {
       _formType = FormType.login;
     });
@@ -383,6 +400,7 @@ class _LoginPageState extends State<LoginPage> {
           ),
           _passwordTF(),
           _registerButton(),
+          _loginButton(),
         ],
       );
     }
