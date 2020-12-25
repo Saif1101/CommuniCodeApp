@@ -1,7 +1,13 @@
+import 'dart:async';
+
 import 'package:coding_inventory/utilities/constants.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'createPost.dart';
+
+
+StreamController<String> streamController = StreamController<String>();
 
 
 
@@ -42,6 +48,9 @@ class _LoginPageState extends State<LoginPage> {
         if (_formType == FormType.login) {
           UserCredential user = await FirebaseAuth.instance
               .signInWithEmailAndPassword(email: _email, password: _password);
+          Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => createPost())); ////NAVIGATION METHOD TO MOVE TO A DIFFERENT SCREEN WITHOUT HAVING THE OPTION TO GO BACK
         } else {
           UserCredential user = await FirebaseAuth.instance
               .createUserWithEmailAndPassword(
@@ -61,6 +70,7 @@ class _LoginPageState extends State<LoginPage> {
       _formType = FormType.registration;
     });
   }
+
   void moveToLogin(){
     formKey.currentState.reset();
     setState(() {
@@ -313,7 +323,7 @@ class _LoginPageState extends State<LoginPage> {
             )
         )
     );
-}//textbox displaying 'LOGIN'
+}
   Widget _registerButton(){
     return Container(
         padding: EdgeInsets.symmetric(vertical:10.0),
