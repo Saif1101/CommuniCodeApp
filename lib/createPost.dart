@@ -99,22 +99,6 @@ class _createPostState extends State<createPost> {
       _descController.clear();
     });
 
-    Alert(
-      context: context,
-      type: AlertType.info,
-      title: "",
-      desc: "Your post has been uploaded.",
-      buttons: [
-        DialogButton(
-          child: Text(
-            "Ok",
-            style: TextStyle(color: Colors.white, fontSize: 20),
-          ),
-          onPressed: () =>Navigator.pop(context),
-          width: 120,
-        )
-      ],
-    ).show();
   }
 
 
@@ -424,16 +408,16 @@ class _linkIconBoxFieldState extends State<linkIconBoxField> {
 
   //MAP CONTAINING THE NAME AND IMAGE OF EACH WEBSITE
   final Map<String, Image> _data = Map.fromIterables(
-      ['github', 'hackerrank','codechef','codeforces',"browser"],
+      ['Github', 'Hackerrank','CodeChef','Codeforces',"Browser"],
       [ Image(
-        image: new AssetImage("assets/Icons/github.png"),
+        image: new AssetImage("assets/Icons/Github.png"),
         width: 34,
         height: 34,
         color: null,
         fit: BoxFit.scaleDown,
         alignment: Alignment.center,
       ),Image(
-        image: AssetImage('assets/Icons/hackerrank.png'),
+        image: AssetImage('assets/Icons/Hackerrank.png'),
         width: 34,
         height:34,
         color: null,
@@ -441,7 +425,7 @@ class _linkIconBoxFieldState extends State<linkIconBoxField> {
         alignment: Alignment.center,
       ),
         Image(
-          image: AssetImage('assets/Icons/codechef.png'),
+          image: AssetImage('assets/Icons/CodeChef.png'),
           width: 34,
           height:34,
           color: null,
@@ -449,7 +433,7 @@ class _linkIconBoxFieldState extends State<linkIconBoxField> {
           alignment: Alignment.center,
         ),
         Image(
-          image: AssetImage('assets/Icons/codeforces.png'),
+          image: AssetImage('assets/Icons/Codeforces.png'),
           width: 34,
           height:34,
           color: null,
@@ -457,7 +441,7 @@ class _linkIconBoxFieldState extends State<linkIconBoxField> {
           alignment: Alignment.center,
         ),
         Image(
-          image: AssetImage('assets/Icons/browser.png'),
+          image: AssetImage('assets/Icons/Browser.png'),
           width: 34,
           height:34,
           color: null,

@@ -1,8 +1,17 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:coding_inventory/createNewUserPage.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'comments.dart';
 import 'googleLoginScreen.dart';
 
 void main() async {
+//  FirebaseFirestore.instance.settings(timestampsInSnapshotsEnabled:true).then(
+//      (_){
+//        print("Timestamps enablesd in snapshots \n");
+//      }, onError: (_){
+//        print("Error enabling timestamps in snapshots");
+//  });
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   runApp(MyApp());
@@ -31,7 +40,7 @@ class MyApp extends StatelessWidget {
         // closer together (more dense) than on mobile platforms.
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: loginPageOnlyGoogle(),
+      home:loginPageOnlyGoogle(),
     );
   }
 }

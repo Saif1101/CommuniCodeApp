@@ -1,25 +1,29 @@
 
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../comments.dart';
+
 
 class postExpanded extends StatefulWidget {
+  final String ownerID;
   final String title;
   final String description;
   final List <String> tags ;
   final List<String> urlList;
   final String postImageUrl;
-
+  final String postID;
 
 
   @override
-  _postExpandedState createState() => _postExpandedState(title: title, description: description, tags: tags, urlList: urlList, postImageUrl: postImageUrl);
+  _postExpandedState createState() => _postExpandedState(ownerID: ownerID, title: title, description: description, tags: tags, urlList: urlList, postImageUrl: postImageUrl, postID: postID);
 
-  postExpanded({this.title, this.description, this.tags, this.urlList,
-      this.postImageUrl});
+  postExpanded({this.ownerID, this.title, this.description, this.tags, this.urlList,
+      this.postImageUrl,this.postID});
 
 
 }
@@ -27,13 +31,15 @@ class postExpanded extends StatefulWidget {
 class _postExpandedState extends State<postExpanded> {
  List <Widget> _buttons = [];
 
+ final String ownerID;
+ final String postID;
  final String title;
  final String description;
  final List<String> tags;
  final List<String> urlList;
  final String postImageUrl;
 
- _postExpandedState({this.title,this.description,this.tags,this.urlList,this.postImageUrl});
+ _postExpandedState({this.ownerID, this.title,this.description,this.tags,this.urlList,this.postImageUrl,this.postID});
 
   @override
   void initState() {
@@ -60,7 +66,6 @@ class _postExpandedState extends State<postExpanded> {
         height: 44,
         width: 300,
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.blueAccent),
             borderRadius: BorderRadius.all(Radius.circular(22))
         ),
         child: ListView.builder(
@@ -70,7 +75,7 @@ class _postExpandedState extends State<postExpanded> {
             return Container(
               decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(22),
-                  border: Border.all(color: Colors.black)
+                  border: Border.all(width:2, color: Colors.black)
               ),
               margin: EdgeInsets.only(right: 13, left: 13),
               child: Padding(
@@ -152,7 +157,7 @@ class _postExpandedState extends State<postExpanded> {
                       child: Container(
                         decoration: BoxDecoration(
                             color: Colors.white.withOpacity(0.95),
-                            borderRadius: BorderRadius.vertical(top:Radius.circular(34),bottom:Radius.circular(34),)
+                            borderRadius: BorderRadius.only(bottomRight:Radius.circular(34),)
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -160,17 +165,25 @@ class _postExpandedState extends State<postExpanded> {
                             SizedBox(height: 310,),
                             Padding(
                               padding: const EdgeInsets.all(8.0),
-                              child: Text(
-                                title,
-                                softWrap: true,
-                                style: TextStyle(
-                                fontFamily:'Avenir',
-                                fontSize: 31,
-                                color: Colors.blueAccent,
-                                fontWeight: FontWeight.w900,),
-                                textAlign: TextAlign.left,
+                              child: ListTile(
+
+                                title: Text(
+                                  title,
+                                  softWrap: true,
+                                  style: TextStyle(
+                                  fontFamily:'Avenir',
+                                  fontSize: 31,
+                                  color: Colors.blueAccent,
+                                  fontWeight: FontWeight.w900,),
+                                  textAlign: TextAlign.left,
+                                ),
+                                trailing: IconButton(icon: Icon(Icons.message), onPressed: ()=>showComments(
+                                  context,
+                                  postImageURL : postImageUrl,
+                                  postID: postID)
+                                )),
                               ),
-                            ),
+                            Divider(color: Colors.black38),
                             Center(
                               child: buildTagsRow(),
                             ),
@@ -206,7 +219,7 @@ class _postExpandedState extends State<postExpanded> {
                           alignment: Alignment(0,-1),
                             child: ClipRRect(
                               borderRadius: BorderRadius.all(Radius.circular(22)),
-                                child: Image(image: NetworkImage(postImageUrl),fit: BoxFit.contain,height:300)),
+                                child: Image(image: CachedNetworkImageProvider(postImageUrl),fit: BoxFit.contain,height:300)),
                         ),
                       )
                   ), //postImage
@@ -244,6 +257,18 @@ class expandPhoto extends StatelessWidget {
       ),
     );
   }
+}
+
+showComments(BuildContext context, {String postID, String postImageURL, String ownerID}){
+  Navigator. push(context, MaterialPageRoute(builder: (context){
+    return commentsPage(
+      ownerID: ownerID,
+      postID: postID,
+      postImageURL: postImageURL,
+    );
+  }
+  )
+  );
 }
 
 

@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:coding_inventory/googleLoginScreen.dart';
 import 'package:flutter/material.dart';
 
+import 'createNewUserPage.dart';
 import 'models/user.dart';
 
 class editProfile extends StatefulWidget {
@@ -25,6 +26,8 @@ class _editProfileState extends State<editProfile> {
 
   TextEditingController usernameController = TextEditingController();
   TextEditingController userBioController = TextEditingController();
+  List alreadySelectedLanguages = [];
+  List<ListItem<String>> languageList=[];
 
   bool isLoading = false;
   User user;
@@ -34,6 +37,7 @@ class _editProfileState extends State<editProfile> {
     // TODO: implement initState
 
     getUser();
+
     super.initState();
   }
 
@@ -54,6 +58,9 @@ class _editProfileState extends State<editProfile> {
     user = User.fromDocument(doc);
     usernameController.text = user.username;
     userBioController.text = user.bio;
+    alreadySelectedLanguages = user.languages;
+    print(alreadySelectedLanguages);
+    initializeLanguageList();
     setState(() {
       isLoading = false;
     });
@@ -136,6 +143,70 @@ class _editProfileState extends State<editProfile> {
     );
   }
 
+  initializeLanguageList(){
+    print("Selected langs");
+    print(alreadySelectedLanguages);
+    List languages = ['python','c++','java','javascript','kotlin','ruby','swift'];
+    for (int i = 0; i < languages.length; i++){
+      ListItem item = ListItem<String>(language: languages[i],iconPath: 'assets/Icons/${languages[i]}.png');
+    if(alreadySelectedLanguages.contains(languages[i])){
+      item.isSelected = true;
+    }
+      languageList.add(item);
+  };
+}
+
+  Widget _getListItem(BuildContext context, int index){
+    return SizedBox(
+      child: GestureDetector(
+        onTap: (){
+          setState(() {
+            languageList[index].isSelected = !languageList[index].isSelected;
+          });
+
+        },
+        child: Card(
+          elevation: 20,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
+          color: languageList[index].isSelected ? Colors.blue[100] : Colors.white,
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Image(
+                image: AssetImage(languageList[index].iconPath),
+                fit: BoxFit.contain,
+                height: 64,
+                width: 64,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _languageGridView(){
+    return SizedBox(
+      height: 210,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal:25.0),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(32.0),
+          child: GridView.count(
+            shrinkWrap: true,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+            childAspectRatio: 1.5,
+            crossAxisCount: 3,
+            children:<Widget>[
+              for(int i =0; i<languageList.length;i++) _getListItem(context, i)
+            ] ,
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   void dispose() {
     // TODO: implement dispose
@@ -145,6 +216,12 @@ class _editProfileState extends State<editProfile> {
   }
 
   updateProfileData(){
+    List<String> newSelectedLanguages = [];
+    for(int i = 0 ; i<languageList.length; i++){
+      if(languageList[i].isSelected)
+        newSelectedLanguages.add(languageList[i].language);
+    };
+
     setState(() {
       usernameController.text.trim().length<3||
       usernameController.text.isEmpty? _userNameValid = false : _userNameValid = true;
@@ -154,12 +231,13 @@ class _editProfileState extends State<editProfile> {
     });
     if(_userNameValid && _bioValid){
       usersRef.doc(widget.currentUserID).update({
+        'languages': newSelectedLanguages,
         'username': usernameController.text.trim(),
         'bio': userBioController.text.trim(),
       });
-      SnackBar snackbar = SnackBar(content: Text("Profile updated!"));
+      SnackBar snackbar = SnackBar(content: Text("Profile updated! Changes will be reflected when you refresh."));
       _scaffoldKey.currentState.showSnackBar(snackbar);
-      Timer(Duration(seconds: 1), () {
+      Timer(Duration(seconds: 3), () {
        Navigator.pop(context);
       });
     }
@@ -199,12 +277,14 @@ class _editProfileState extends State<editProfile> {
                   )
                 ),
                 Padding(
-                  padding: EdgeInsets.all(16.0),
+                  padding: EdgeInsets.all(15.0),
                   child: Column(
                     children: <Widget>[
                       buildUsernameField(),
-                      SizedBox(height: 10.0,),
+                      SizedBox(height: 7.0,),
                       buildBioField(),
+                      SizedBox(height: 10.0,),
+                      _languageGridView(),
                       RaisedButton(
                         color: Colors.white,
                         onPressed: updateProfileData,

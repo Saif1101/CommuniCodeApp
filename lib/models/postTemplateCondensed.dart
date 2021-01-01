@@ -1,4 +1,5 @@
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -14,9 +15,13 @@ class postTemplate extends StatelessWidget {
   final List <String> tags ;
   final List<String> urlList;
   final String postImageUrl;
+  final String postID;
+  final String ownerID;
 
   factory postTemplate.fromDocument(DocumentSnapshot doc) {
   return postTemplate(
+    ownerID: doc.data()["ownerID"],
+    postID: doc.data()['postID'],
   title: doc.data()['postTitle'],
   description: doc.data()['description'],
   postImageUrl: doc.data()['imageUrl'],
@@ -25,8 +30,8 @@ class postTemplate extends StatelessWidget {
   );
   }
 
-  postTemplate({this.title, this.description, this.tags, this.urlList,
-  this.postImageUrl});
+  postTemplate({this.ownerID, this.title, this.description, this.tags, this.urlList,
+  this.postImageUrl,this.postID});
 
 
 
@@ -48,7 +53,7 @@ class postTemplate extends StatelessWidget {
                 child: ListTile(
                   title: Text(title),
                   trailing: GestureDetector(
-                    onTap: ()=> Navigator.push(context,MaterialPageRoute(builder: (context)=> postExpanded(title: title, description: description, tags: tags, urlList: urlList, postImageUrl: postImageUrl))),
+                    onTap: ()=> Navigator.push(context,MaterialPageRoute(builder: (context)=> postExpanded(ownerID: ownerID, title: title, description: description, tags: tags, urlList: urlList, postImageUrl: postImageUrl,postID: postID,))),
                     child: RadiantGradientMask(child: Icon(Icons.arrow_forward,size: 35,color: Colors.white,),),
                   ),
                 ), //Title and Read More Button that directs to an instance of postTemplateExpanded
@@ -60,7 +65,7 @@ class postTemplate extends StatelessWidget {
                   borderRadius: BorderRadius.vertical(top:Radius.circular(34),bottom:Radius.circular(34),),
                 ),
                   child: ClipRRect(borderRadius: BorderRadius.all(Radius.circular(22)),
-                      child: Image(image: NetworkImage(postImageUrl),
+                      child: Image(image: CachedNetworkImageProvider(postImageUrl),
                         fit: BoxFit.contain,
                         height: 300,),),),) //Post image displayed in a rounded rectanglle
             ],

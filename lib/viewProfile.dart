@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/rendering.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'package:flutter/cupertino.dart';
@@ -17,21 +18,55 @@ import 'models/postTemplateCondensed.dart';
 class viewProfile extends StatefulWidget {
   final String profileID;
 
-  viewProfile({this.profileID});
+
+  viewProfile({@ required this.profileID});
   @override
   _viewProfileState createState() => _viewProfileState();
 }
 
 class _viewProfileState extends State<viewProfile> {
+
   final String currentUserId = googleSignIn.currentUser.id;
   bool postsLoading = false;
   List<Widget>postTemplateTry=[];
+  List <Widget> badges = [];
+  bool badgesLoading = false;
+
+  bool isFollowing = false;
+  int followerCount = 0;
+  int followingCount = 0;
+
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     getProfilePosts();
+    checkIfFollowing();
   }
+
+  checkIfFollowing() async {
+    DocumentSnapshot doc = await followersRef
+        .doc(widget.profileID)
+        .collection('userFollowers')
+        .doc(currentUserId)
+        .get();
+    setState(() {
+      isFollowing = doc.exists;
+    });
+  }
+
+  getFollower() async {
+    QuerySnapshot snapshot = await followersRef
+        .doc(widget.profileID)
+        .collection('userFollowers')
+        .get();
+
+    setState(() {
+      followerCount = snapshot.docs.length;
+    });
+  }
+
 
   getProfilePosts  () async {
     print("Getting profile posts");
@@ -39,7 +74,7 @@ class _viewProfileState extends State<viewProfile> {
       postsLoading = true;
     });
     QuerySnapshot snapshot = await postsRef
-    .doc(currentUserId)
+    .doc(widget.profileID)
     .collection('userPosts')
     .orderBy('timestamp',descending: true)
     .get();
@@ -68,13 +103,18 @@ class _viewProfileState extends State<viewProfile> {
 
     }
     else if(!postsLoading && postTemplateTry.length==0){
-      return Center(
-        child: (
-        Text("No Posts!")
+      return SizedBox(
+        height: 300,
+        child: Center(
+          child: (
+          Text("No Posts!")
+          ),
         ),
       );
     }
   } //Returning a SWIPER Widget containing all posts moulded in the format specified by the postTemplateCondensed
+
+
 
   buildCountsRow(int followerCount, int followingCount) {
     return Padding(
@@ -82,44 +122,31 @@ class _viewProfileState extends State<viewProfile> {
           right: 38.0, left: 38.0, top: 15, bottom: 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(followerCount.toString(),
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 25,),
-              ),
-              Text('followers',
-                style: TextStyle(
-                  color: Colors.white,
-                ),)
-            ],
-          ),
+          makeBadges(), // GridView Scrollable Badges Container
           Container(
-            color: Colors.white,
-            width: 0.2,
+            color: Colors.black,
+            width: 1,
             height: 22,
           ),
           Column(
             children: [
-              Text(followingCount.toString(),
+              Text(followerCount.toString(),
                 style: TextStyle(
-                  color: Colors.white,
+                  color: Colors.black,
                   fontWeight: FontWeight.bold,
                   fontSize: 25,),
               ),
               Text('following',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: Colors.black,
                 ),)
             ],
           ),
           Container(
-            color: Colors.white,
-            width: 0.2,
+            color: Colors.black,
+            width: 1,
             height: 22,
           ),
           buildProfileButton(),
@@ -128,6 +155,61 @@ class _viewProfileState extends State<viewProfile> {
     );
   } //Returns row containing the number of followers/following/posts
   //^^^TO BE REPLACED BY BADGES
+
+  badgeTemplate(String lang){
+    return SizedBox(
+      width: 55,
+      height: 55,
+      child: Image(image: AssetImage('assets/Icons/${lang}Badge.png'),fit: BoxFit.contain,),
+    );
+  }
+
+
+
+  makeBadges() {
+    return FutureBuilder(
+      future: usersRef.doc(widget.profileID).get(),
+        builder: (context,snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting){
+            return Container(
+              height: 50,
+              width: 50,
+              padding: EdgeInsets.only(bottom: 10.0),
+              child: Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation(Colors.purple),
+                ),
+              ),
+            );
+          }
+          else if(snapshot.connectionState == ConnectionState.done){
+            List <Widget> badgesTemp = [];
+            User user = User.fromDocument(snapshot.data);
+            List languagesList = user.languages;
+
+            for(int i = 0; i<languagesList.length;i++){
+              badgesTemp.add(badgeTemplate(languagesList[i]));
+            }
+            return Container(
+              height: 120,
+              width: 120,
+              child: Center(
+                child: GridView.count(
+                    shrinkWrap: true,
+                    crossAxisSpacing: 5,
+                    childAspectRatio: 1,
+                    crossAxisCount: 2,
+                    children: badgesTemp
+                ),
+              ),
+            );
+          }
+          else{
+            return (Text("Something went wrong"));
+          }
+        }
+        );
+  }
 
   buildProfileHeader() {
     return FutureBuilder(
@@ -143,56 +225,61 @@ class _viewProfileState extends State<viewProfile> {
         }
         else if (snapshot.connectionState == ConnectionState.done) {
           User user = User.fromDocument(snapshot.data);
-
           return Column(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.only(left: 28.0, top: 7),
-                    child: CircleAvatar(
-                      radius: 35,
-                      backgroundImage: CachedNetworkImageProvider(
-                          user.photoUrl),
-                      //Add backgroundImage: User's Profile Image
-                    ),
-                  ), //CircleAvatar for Profile Photo
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Padding(
-                        padding: const EdgeInsets.only(left: 38.0),
-                        child: Text('${user.username}',
-                          style: GoogleFonts.fjallaOne(
-                            fontSize: 40,
-                            color: Colors.white
-                           )
-                        ),
+              Card(
+                elevation: 25,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.only(left: 28.0, top: 7),
+                      child: CircleAvatar(
+                        radius: 35,
+                        backgroundImage: CachedNetworkImageProvider(
+                            user.photoUrl),
+                        //Add backgroundImage: User's Profile Image
                       ),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8.0),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: <Widget>[
-                            Padding(
-                              padding: EdgeInsets.only(left: 25.0),
-                              child: Text('${user.displayName}',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            )
-                          ],
+                    ), //CircleAvatar for Profile Photo
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Padding(
+                          padding: const EdgeInsets.only(left: 38.0),
+                          child: Text('${user.username}',
+                            style: GoogleFonts.aBeeZee(
+                              fontSize: 40,
+                              color: Colors.black,
+                              fontWeight: FontWeight.w600
+                             )
+                          ),
                         ),
-                      )
-                    ],
-                  ) // Column Containing Username and DisplayName
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: <Widget>[
+                              Padding(
+                                padding: EdgeInsets.only(left: 25.0),
+                                child: Text('${user.displayName}',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black,
 
-                ],
+                                  ),
+                                ),
+                              )
+                            ],
+                          ),
+                        )
+                      ],
+                    ), // Column Containing Username and DisplayName
+
+
+                  ],
+                ),
               ),
               //Follwer/Following Counts, Follow Button
               buildCountsRow(32, 12),
@@ -204,8 +291,8 @@ class _viewProfileState extends State<viewProfile> {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                       fontSize: 18.0,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.white
+                      fontWeight: FontWeight.w300,
+                      color: Colors.black
                   ),
                 ),
               ),
@@ -244,7 +331,47 @@ class _viewProfileState extends State<viewProfile> {
     Navigator.push(context, MaterialPageRoute(builder: (context)=> editProfile(currentUserID: widget.profileID)));
   } //Method to specify whether to direct FOLLOW/EDIT button press to edit profile page
 
-  buildProfileButton(){
+  handleUnfollowUser(){
+    setState(() {
+      isFollowing = false;
+    });
+    //remove this user from the profile's followers collection
+    followersRef
+        .doc(widget.profileID)
+        .collection('userFollowers')
+        .doc(currentUserId)
+        .get().then((doc){
+          doc.reference.delete();
+    });                               //DELETE IF PRESENT
+    //delete user in the profile's following collection
+    followingRef
+        .doc(currentUserId)
+        .collection('userFollowing')
+        .doc(widget.profileID)
+        .get().then((doc){
+      doc.reference.delete();
+    });
+  }
+
+  handleFollowUser(){
+    setState(() {
+      isFollowing = true;
+    });
+    //Make auth user follower of Another user (update their followers collection)
+    followersRef
+    .doc(widget.profileID)
+    .collection('userFollowers')
+    .doc(currentUserId)
+    .set({});
+    //Put this user in the profile's following collection
+    followingRef
+    .doc(currentUserId)
+    .collection('userFollowing')
+    .doc(widget.profileID)
+    .set({});
+  }
+
+  buildProfileButton(){ //building the EDIT/FOLLOW Button next to the followers/following counts
     // viewing your own profile - should show edit profile button
     //viewing someone else's profile -> should show follow button
     bool isProfileOwner;
@@ -254,13 +381,19 @@ class _viewProfileState extends State<viewProfile> {
           text: "Edit Profile",
       function: pushToEditProfile);
     }
-    return(Text("buttonValue is null"));
-  } //building the EDIT/FOLLOW Button next to the followers/following counts
+    else if(isFollowing){
+      return buildButton(text:"Unfollow",function: handleUnfollowUser);
+    }
+    else if(!isFollowing){
+      return buildButton(text: "Follow",function: handleFollowUser);
+    }
+  }
 
 
 
   @override
   Widget build(BuildContext context) {
+    print('${widget.profileID}');
     return Scaffold(
       backgroundColor: Color(0xff09031D),
         body: Stack(
@@ -269,26 +402,32 @@ class _viewProfileState extends State<viewProfile> {
                 child: Image(
                   image: AssetImage('assets/images/ThemeDark.png'),
                   fit : BoxFit.fill,
-    )),
+                )),
             ListView(
-//        mainAxisAlignment: MainAxisAlignment.start,
-
               children: [
-                SizedBox(height: 30,),
-                buildProfileHeader(),
-                SizedBox(height: 30,),
+                Card(
+                  shadowColor: Colors.lightBlueAccent,
+                  elevation:25.0,
+                  color: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(64),
+                    )
+                  ),
+                  child: buildProfileHeader(),
+                ),
                 Container(
                   child: Container(
                     decoration: BoxDecoration(
                         color:  Colors.white.withOpacity(0.6),
-                        borderRadius: BorderRadius.vertical(top:Radius.circular(34),bottom:Radius.circular(34) )
+                        borderRadius: BorderRadius.only(topRight:Radius.circular(34) )
                     ),
                     child: Column(
                       children: [
-                        Align(alignment: Alignment(-0.9,-0.9),
+                        Align(alignment: Alignment(-1,-1),
                             child: Text("Posts",
-                              style: TextStyle(color: Color(0xFF414C6B),
-                                  fontSize: 34,
+                              style: TextStyle(color: Colors.white,
+                                  fontSize: 64,
                                   fontWeight: FontWeight.bold,
                               ),
                             ),

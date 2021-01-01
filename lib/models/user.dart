@@ -8,6 +8,7 @@ class User{
   final String photoUrl;
   final String displayName;
   final String bio;
+  final List  languages;
 
   User({
     this.id,
@@ -16,6 +17,7 @@ class User{
     this.photoUrl,
     this.displayName,
     this.bio,
+    this.languages
 });
 
   factory User.fromDocument(DocumentSnapshot doc){
@@ -27,6 +29,7 @@ class User{
       photoUrl: doc.data()['photoUrl'],
       displayName: doc.data()['displayName'],
       bio: doc.data()['bio'],
+      languages: doc.data()['languages']
     );
   }
 

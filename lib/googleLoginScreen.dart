@@ -25,7 +25,10 @@ import 'createNewUserPage.dart';
 final Reference firebaseStorageRef = FirebaseStorage.instance.ref(); //To upload and storage the images
 
 final postsRef = FirebaseFirestore.instance.collection('posts'); //To store information about the posts(title/description/tags/urls/ImageUrl)
-final usersRef = FirebaseFirestore.instance.collection('users'); //To store information about user profiles (id/username/email/displayPhoto/displayName/bio)
+final usersRef = FirebaseFirestore.instance.collection('users');//To store information about user profiles (id/username/email/displayPhoto/displayName/bio)
+final commentsRef = FirebaseFirestore.instance.collection('comments');//To store comment information
+final followersRef = FirebaseFirestore.instance.collection('followers');//To store comment information
+final followingRef = FirebaseFirestore.instance.collection('following');//To store comment information
 
 final GoogleSignIn googleSignIn = GoogleSignIn();
 final DateTime timestamp = DateTime.now();
@@ -97,33 +100,27 @@ class _loginPageOnlyGoogleState extends State<loginPageOnlyGoogle> {
       /*2) If NOT, direct the user to the set up profile page. ->
      Get their username and generate new ID
      */
-     final username = await Navigator.push(context, MaterialPageRoute(builder: (context) => createNewUserPage()));
+     final usernameAndLanguages = await Navigator.push(context, MaterialPageRoute(builder: (context) => createNewUserPage()));
 
      usersRef.doc(user.id).set({
        'id':user.id,
-       'username':username,
+       'username':usernameAndLanguages['username'],
        'photoUrl':user.photoUrl,
        'email': user.email,
        'displayName': user.displayName,
        'bio':'',
+       'languages':usernameAndLanguages['languages'],
        'timestamp': timestamp,
      });
      doc = await usersRef.doc(user.id).get();
     }
 
-    currentUser = User.fromDocument(doc);
-    setState(() {});
-    print(currentUser.id);
-    print(currentUser.username);
+    setState(() {
+      currentUser = User.fromDocument(doc);
+    });
     // 3) Get username from the create accounts page and use it to create
     // a new user document in users collection.
   }
-
-//  @override
-//  void dispose(){
-//    pageController.dispose();
-//    super.dispose();
-//  }
 
   Widget _buildLoginPage() {
     return Scaffold(
@@ -184,14 +181,15 @@ class _loginPageOnlyGoogleState extends State<loginPageOnlyGoogle> {
   }
 
   Widget homeScreen(){
+
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: PageView(
         children: <Widget>[
           viewProfile(profileID: currentUser?.id),
           Timeline(),
-          search(),
           createPost(currentUser : currentUser),
+          search(),
         ],
         physics: NeverScrollableScrollPhysics(),
         controller: pageController,
