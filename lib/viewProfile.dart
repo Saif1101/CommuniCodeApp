@@ -249,10 +249,10 @@ class _viewProfileState extends State<viewProfile> {
                         Padding(
                           padding: const EdgeInsets.only(left: 38.0),
                           child: Text('${user.username}',
-                            style: GoogleFonts.aBeeZee(
+                            style: GoogleFonts.oswald(
                               fontSize: 40,
                               color: Colors.black,
-                              fontWeight: FontWeight.w600
+                              fontWeight: FontWeight.w500
                              )
                           ),
                         ),
@@ -406,7 +406,7 @@ class _viewProfileState extends State<viewProfile> {
             ListView(
               children: [
                 Card(
-                  shadowColor: Colors.lightBlueAccent,
+                  shadowColor: Colors.black,
                   elevation:25.0,
                   color: Colors.white,
                   shape: RoundedRectangleBorder(

@@ -1,12 +1,15 @@
 
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:coding_inventory/models/postTemplateCondensed.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../comments.dart';
+import '../googleLoginScreen.dart';
 
 
 class postExpanded extends StatefulWidget {
@@ -41,11 +44,26 @@ class _postExpandedState extends State<postExpanded> {
 
  _postExpandedState({this.ownerID, this.title,this.description,this.tags,this.urlList,this.postImageUrl,this.postID});
 
+ int numComments = 0;
+
+
   @override
   void initState() {
     // TODO: implement initStat
     super.initState();
+    getNumberOfComments();
     buildLinkButtonRow();
+  }
+
+  getNumberOfComments() async {
+    QuerySnapshot snapshot = await commentsRef
+        .doc(widget.postID)
+        .collection('comments')
+        .get();
+
+    setState(() {
+      numComments = snapshot.docs.length;
+    });
   }
 
 
@@ -136,6 +154,69 @@ class _postExpandedState extends State<postExpanded> {
     });
   } // Method that processes the urls to yield OvalButtons that direct user to links
 
+
+ Widget _commentButton(){
+   return Center(
+     child: Container(
+         padding: EdgeInsets.symmetric(vertical:1.0),
+         width: MediaQuery.of(context).size.width-50,
+         child: RaisedButton(
+           elevation: 25.0,
+           onPressed:()=>showComments(
+         context,
+         postImageURL : postImageUrl,
+         postID: postID),
+//         padding: EdgeInsets.all(15.0),
+           shape: RoundedRectangleBorder(
+             borderRadius: BorderRadius.circular(30.0),
+           ),
+           child: Ink(
+             decoration: const BoxDecoration(
+               gradient: LinearGradient(
+                   colors: [Colors.lightBlueAccent, Colors.deepPurpleAccent],
+                   begin: Alignment.bottomRight,
+                   end: Alignment.centerLeft),
+               borderRadius: BorderRadius.all(Radius.circular(80.0)),
+             ),
+             child: Container(
+//               constraints: const BoxConstraints(minWidth: 88.0, minHeight: 36.0), // min sizes for Material buttons
+                 alignment: Alignment.center,
+                 child: Text(
+                     'Comment',
+                     style: TextStyle(
+                       color: Colors.white,
+//                     shadows: [
+//                       Shadow( // bottomLeft
+//                           offset: Offset(-1.5, -1.5),
+//                           color: Colors.grey
+//                       ),
+//                       Shadow( // bottomRight
+//                           offset: Offset(1.5, -1.5),
+//                           color: Colors.black
+//                       ),
+//                       Shadow( // topRight
+//                           offset: Offset(1.5, 1.5),
+//                           color: Colors.black
+//                       ),
+//                       Shadow( // topLeft
+//                           offset: Offset(-1.5, 1.5),
+//                           color: Colors.grey
+//                       ),
+//                     ],
+
+                       letterSpacing: 1.6,
+                       fontSize: 20.0,
+                       fontWeight: FontWeight.bold,
+                       fontFamily: 'OpenSans',
+                     )
+                 )
+             ),
+           ),
+
+         )
+     ),
+   );
+ }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -177,10 +258,30 @@ class _postExpandedState extends State<postExpanded> {
                                   fontWeight: FontWeight.w900,),
                                   textAlign: TextAlign.left,
                                 ),
-                                trailing: IconButton(icon: Icon(Icons.message), onPressed: ()=>showComments(
-                                  context,
-                                  postImageURL : postImageUrl,
-                                  postID: postID)
+                                trailing: ClipOval(
+                                  child: Material(
+                                    color: Colors.white,
+                                    child: InkResponse(
+                                      highlightShape: BoxShape.circle,
+                                      splashColor: Colors.lightBlue,
+                                      child: Padding(
+                                        padding: const EdgeInsets.only(left: 10.0, top:8.0, bottom: 8.0),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Center(child: Text("$numComments")),
+                                            RadiantGradientMask(
+                                              child: IconButton(iconSize: 20, color: Colors.white,icon: Icon(Icons.message), onPressed: ()=>showComments(
+                                                  context,
+                                                  postImageURL : postImageUrl,
+                                                  postID: postID)
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
                                 )),
                               ),
                             Divider(color: Colors.black38),
@@ -205,7 +306,7 @@ class _postExpandedState extends State<postExpanded> {
                                 children: _buttons,
                               ),
                             ),
-
+                            _commentButton()
 
                           ],
                         ),

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:coding_inventory/viewProfile.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'models/user.dart';
@@ -13,13 +14,15 @@ class search extends StatefulWidget {
   _searchState createState() => _searchState();
 }
 
-TextEditingController searchController = TextEditingController(); // To control/clear the search bar
+ // To control/clear the search bar
 
 
 
 
 
 class _searchState extends State<search> {
+  TextEditingController searchController = TextEditingController(); // To control/clear the search bar
+
   Future<QuerySnapshot> searchResultsFuture;
   List<UserResult> searchResults = [];//Store and update the search results by using the setState function from inside the handleSearch function
 
@@ -52,17 +55,7 @@ class _searchState extends State<search> {
           searchResults.add(searchResult);
         });
         return ListView(
-
-          children: [Column(children:searchResults),
-          IconButton(icon: Icon(Icons.clear),
-            color: Colors.white,
-            onPressed:(){
-            setState(() {
-              searchResults.clear();
-            });
-            },
-          ),
-          ]
+          children: searchResults,
         );
         },
     );
@@ -122,7 +115,10 @@ class _searchState extends State<search> {
     return Scaffold(
       appBar: buildSearchField(),
       body: searchResultsFuture == null ? buildBodyWallpaper() : Stack(
-        children:[buildBodyWallpaper(),buildSearchResults()]
+        children:[
+          buildBodyWallpaper(),
+          buildSearchResults()
+        ],
       ),
     );
   }
@@ -143,25 +139,28 @@ class UserResult extends StatelessWidget {
         children: <Widget>[
           SizedBox(height:12.0),
           GestureDetector(
-            onTap:  ()=> print(user.displayName),
-            child:  ListTile(
-              leading: CircleAvatar(
-                backgroundColor: Colors.lightBlueAccent,
-                backgroundImage: CachedNetworkImageProvider(user.photoUrl), //Using a cached network image provider so that
-                ///we can temporarily cache the image/store it within a cache folder for later use so that we don't
-                ///have to load it every time
-              ),
-              title: Text(
-                  user.displayName,
+            onTap:  () => redirectToProfile(context, profileID: user.id),
+            child:  Card(
+              elevation: 10,
+              child: ListTile(
+                leading: CircleAvatar(
+                  backgroundColor: Colors.lightBlueAccent,
+                  backgroundImage: CachedNetworkImageProvider(user.photoUrl), //Using a cached network image provider so that
+                  ///we can temporarily cache the image/store it within a cache folder for later use so that we don't
+                  ///have to load it every time
+                ),
+                title: Text(
+                    user.displayName,
+                    style: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold
+                    )
+                ),
+                subtitle: Text(
+                  user.username,
                   style: TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold
-                  )
-              ),
-              subtitle: Text(
-                user.username,
-                style: TextStyle(
-                  color: Colors.black38,
+                    color: Colors.black38,
+                  ),
                 ),
               ),
             ),
@@ -170,9 +169,21 @@ class UserResult extends StatelessWidget {
             height: 2.0,
             color: Colors.lightBlueAccent,
           ),
+          SizedBox(height: 10.0,)
         ],
       ),
     );
   }
+}
+
+redirectToProfile(BuildContext context, {String profileID}){
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => viewProfile(
+          profileID: profileID
+      )
+    )
+  );
 }
 
