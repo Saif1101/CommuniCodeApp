@@ -1,5 +1,6 @@
 import 'dart:core';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:coding_inventory/activityFeedPage.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -23,12 +24,13 @@ import 'createNewUserPage.dart';
 
 
 final Reference firebaseStorageRef = FirebaseStorage.instance.ref(); //To upload and storage the images
-
+final cookiesRef = FirebaseFirestore.instance.collection('cookies');
 final postsRef = FirebaseFirestore.instance.collection('posts'); //To store information about the posts(title/description/tags/urls/ImageUrl)
 final usersRef = FirebaseFirestore.instance.collection('users');//To store information about user profiles (id/username/email/displayPhoto/displayName/bio)
 final commentsRef = FirebaseFirestore.instance.collection('comments');//To store comment information
-final followersRef = FirebaseFirestore.instance.collection('followers');//To store comment information
-final followingRef = FirebaseFirestore.instance.collection('following');//To store comment information
+final followersRef = FirebaseFirestore.instance.collection('followers');//To store followers information
+final followingRef = FirebaseFirestore.instance.collection('following');//To store following information
+final activityFeedRef = FirebaseFirestore.instance.collection('feed');//To store data and build an activity feeds for users
 
 final GoogleSignIn googleSignIn = GoogleSignIn();
 final DateTime timestamp = DateTime.now();
@@ -73,10 +75,10 @@ class _loginPageOnlyGoogleState extends State<loginPageOnlyGoogle> {
     });
   }
 
-  handleSignIn(GoogleSignInAccount account){
+  handleSignIn(GoogleSignInAccount account)async{
     if(account != null){
       print("User signed in: $account ");
-      createUserInFirestore();
+      await createUserInFirestore();
       setState(() {
         isAuth=true;
       });
@@ -190,6 +192,7 @@ class _loginPageOnlyGoogleState extends State<loginPageOnlyGoogle> {
           Timeline(),
           createPost(currentUser : currentUser),
           search(),
+          activityFeed(),
         ],
         physics: NeverScrollableScrollPhysics(),
         controller: pageController,
@@ -221,15 +224,12 @@ class _loginPageOnlyGoogleState extends State<loginPageOnlyGoogle> {
                 size: 25),
           ),
           RadiantGradientMask(
-            child: Icon(Icons.exit_to_app,
+            child: Icon(Icons.notifications_active,
                 color: Colors.white,
                 size: 25),
           ),
         ],
         onTap: (index) {
-          if(index == 4){
-            logout();
-          }
           //Handle button tap
           navigationOnTap(index);
         },
@@ -241,46 +241,5 @@ class _loginPageOnlyGoogleState extends State<loginPageOnlyGoogle> {
   @override
   Widget build(BuildContext context) {
     return isAuth ? homeScreen() : _buildLoginPage();
-//    return Scaffold(
-//      body:Stack(
-//        children: [Container(
-//          height: double.infinity,
-//          width: double.infinity,
-//          decoration: BoxDecoration(
-//          image: DecorationImage(
-//          image: AssetImage('assets/images/ThemeDark.png'),
-//    fit: BoxFit.fill,)),
-//          child: Column(
-//            mainAxisAlignment: MainAxisAlignment.center,
-//            crossAxisAlignment: CrossAxisAlignment.center,
-//            children: [
-//              GestureDetector(
-//                onTap: login,
-//                child: Container(
-//                  width: 260.0,
-//                  height: 60.0,
-//                  decoration: BoxDecoration(
-//                    image: DecorationImage(
-//                      image: AssetImage('assets/images/google_sign_up.png'),
-//                          fit: BoxFit.cover),
-//                    )
-//                  ),
-//
-//                ),
-//            ],
-//          ),
-//          ),
-//          Container(
-//              width: 260.0,
-//              height: 60.0,
-//              decoration: BoxDecoration(
-//                image: DecorationImage(
-//                    image: AssetImage('assets/images/logoBlackBG_preview_rev_1.png'),
-//                    fit: BoxFit.cover),
-//              )
-//          ),
-//      ],
-//      ),
-//    );
   }
 }

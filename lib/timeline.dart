@@ -11,18 +11,18 @@ class Timeline extends StatefulWidget {
 class _TimelineState extends State<Timeline> {
   @override
   void initState(){
-    getUsers();
+//    getUsers();
     super.initState();
   }
 
-  getUsers(){
-    usersRef.get().then((QuerySnapshot snapshot){
-      snapshot.docs.forEach((DocumentSnapshot doc){
-        print(doc.data()); //PRINTING THE CONTENTS OF EACH DOCUMENT(as an array)
-      }
-      );
-    });
-  }
+//  getUsers(){
+//    usersRef.get().then((QuerySnapshot snapshot){
+//      snapshot.docs.forEach((DocumentSnapshot doc){
+//        print(doc.data()); //PRINTING THE CONTENTS OF EACH DOCUMENT(as an array)
+//      }
+//      );
+//    });
+//  }
 
   Widget build(BuildContext context) {
     return Container();

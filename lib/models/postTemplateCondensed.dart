@@ -17,9 +17,13 @@ class postTemplate extends StatelessWidget {
   final String postImageUrl;
   final String postID;
   final String ownerID;
+  final String postStatus;
+  final int cookiesToAward;
 
   factory postTemplate.fromDocument(DocumentSnapshot doc) {
+
   return postTemplate(
+    postStatus : doc.data()['postStatus'],
     ownerID: doc.data()["ownerID"],
     postID: doc.data()['postID'],
   title: doc.data()['postTitle'],
@@ -27,11 +31,24 @@ class postTemplate extends StatelessWidget {
   postImageUrl: doc.data()['imageUrl'],
   urlList: doc.data()['siteLinks'].cast<String>(),
   tags:  doc.data()['tags'].cast<String>(),
+    cookiesToAward: doc.data()['cookiesToAward'],
   );
   }
 
-  postTemplate({this.ownerID, this.title, this.description, this.tags, this.urlList,
+  postTemplate({this.cookiesToAward, this.postStatus, this.ownerID, this.title, this.description, this.tags, this.urlList,
   this.postImageUrl,this.postID});
+
+  Widget statusOval(){
+    return ClipOval(
+      child: Image(
+        image: new AssetImage("assets/images/post$postStatus.png"),
+        width: 52,
+        height:52,
+        color: null,
+        fit: BoxFit.scaleDown,
+      ),
+    );
+  }
 
 
 
@@ -51,9 +68,10 @@ class postTemplate extends StatelessWidget {
               SizedBox(
                 height: 50,
                 child: ListTile(
-                  title: Text(title),
+                  leading: Text(title, overflow: TextOverflow.ellipsis,),
+                  title: statusOval(),
                   trailing: GestureDetector(
-                    onTap: ()=> Navigator.push(context,MaterialPageRoute(builder: (context)=> postExpanded(ownerID: ownerID, title: title, description: description, tags: tags, urlList: urlList, postImageUrl: postImageUrl,postID: postID,))),
+                    onTap: (){print("owner ID is ${ownerID}");Navigator.push(context,MaterialPageRoute(builder: (context)=> postExpanded(cookiesToAward: cookiesToAward,postStatus: postStatus, ownerID: ownerID, title: title, description: description, tags: tags, urlList: urlList, postImageUrl: postImageUrl,postID: postID,)));},
                     child: RadiantGradientMask(child: Icon(Icons.arrow_forward,size: 35,color: Colors.white,),),
                   ),
                 ), //Title and Read More Button that directs to an instance of postTemplateExpanded
@@ -67,7 +85,7 @@ class postTemplate extends StatelessWidget {
                   child: ClipRRect(borderRadius: BorderRadius.all(Radius.circular(22)),
                       child: Image(image: CachedNetworkImageProvider(postImageUrl),
                         fit: BoxFit.contain,
-                        height: 300,),),),) //Post image displayed in a rounded rectanglle
+                        height: 300,),),),) //Post image displayed in a rounded rectangle
             ],
           ),
         ),

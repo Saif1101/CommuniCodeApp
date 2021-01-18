@@ -77,6 +77,8 @@ class _createPostState extends State<createPost> {
 
   createPostInFirestore({String mediaUrl, String title, String description, List <String> tagsList, List<String> urls}){
     postsRef.doc(widget.currentUser.id).collection('userPosts').doc(postID).set({
+      'postStatus'  : 'Open',
+      'cookiesToAward': 2,
       'postTitle': title,
       'postID': postID,
       'ownerID': widget.currentUser.id,

@@ -9,8 +9,10 @@ class User{
   final String displayName;
   final String bio;
   final List  languages;
+  final int cookies;
 
   User({
+    this.cookies,
     this.id,
     this.username,
     this.email,
@@ -23,6 +25,7 @@ class User{
   factory User.fromDocument(DocumentSnapshot doc){
 
     return User(
+      cookies: doc.data()['cookies'],
       id: doc.data()['id'],
       email: doc.data()['email'],
       username: doc.data()['username'],
