@@ -41,7 +41,7 @@ class postTemplate extends StatelessWidget {
   Widget statusOval(){
     return ClipOval(
       child: Image(
-        image: new AssetImage("assets/images/post$postStatus.png"),
+        image: new AssetImage("assets/images/post${this.postStatus}.png"),
         width: 52,
         height:52,
         color: null,
@@ -54,6 +54,18 @@ class postTemplate extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Widget statusOval(){
+      return ClipOval(
+        child: Image(
+          image: new AssetImage("assets/images/post${postStatus}.png"),
+          width: 32,
+          height:32,
+          color: null,
+          fit: BoxFit.scaleDown,
+        ),
+      );
+    }
+
     return SizedBox(
       height: 300,
         width: 350,
@@ -68,7 +80,7 @@ class postTemplate extends StatelessWidget {
               SizedBox(
                 height: 50,
                 child: ListTile(
-                  leading: Text(title, overflow: TextOverflow.ellipsis,),
+                  leading: Text(title, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),),
                   title: statusOval(),
                   trailing: GestureDetector(
                     onTap: (){print("owner ID is ${ownerID}");Navigator.push(context,MaterialPageRoute(builder: (context)=> postExpanded(cookiesToAward: cookiesToAward,postStatus: postStatus, ownerID: ownerID, title: title, description: description, tags: tags, urlList: urlList, postImageUrl: postImageUrl,postID: postID,)));},

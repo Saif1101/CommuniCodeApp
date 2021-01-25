@@ -99,8 +99,12 @@ class _viewProfileState extends State<viewProfile> {
     if(postsLoading){
       return Container(
         padding: EdgeInsets.only(bottom: 10.0),
-        child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation(Colors.purple),
+        child: Column(
+          children: [
+            CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation(Colors.purple),
+            ),
+          ],
         ),
       );
     }
@@ -140,7 +144,7 @@ class _viewProfileState extends State<viewProfile> {
           Column(
             children: [
               CircleAvatar(
-                radius: 26,
+                radius: 18,
                   backgroundImage: AssetImage('assets/images/cookieVector.jpg')),
               Text(cookieCount.toString(),
                 style: TextStyle(
@@ -428,19 +432,20 @@ class _viewProfileState extends State<viewProfile> {
                 Container(
                   child: Container(
                     decoration: BoxDecoration(
-                        color:  Colors.white.withOpacity(0.6),
+                        color:  Colors.white.withOpacity(1),
                         borderRadius: BorderRadius.only(topRight:Radius.circular(34) )
                     ),
                     child: Column(
                       children: [
                         Align(alignment: Alignment(-1,-1),
                             child: Text("Posts",
-                              style: TextStyle(color: Colors.white,
+                              style: TextStyle(color: Colors.black,
                                   fontSize: 64,
                                   fontWeight: FontWeight.bold,
                               ),
                             ),
                         ),
+                        Divider(color: Colors.black, thickness: 2.0,),
                         buildPosts()
                       ],
                     ),

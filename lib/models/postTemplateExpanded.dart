@@ -105,7 +105,7 @@ class _postExpandedState extends State<postExpanded> {
             return Container(
               decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(22),
-                  border: Border.all(width:2, color: Colors.black)
+                  border: Border.all(width:3, color: Colors.black)
               ),
               margin: EdgeInsets.only(right: 13, left: 13),
               child: Padding(
@@ -258,24 +258,6 @@ class _postExpandedState extends State<postExpanded> {
                      'Comment',
                      style: TextStyle(
                        color: Colors.white,
-//                     shadows: [
-//                       Shadow( // bottomLeft
-//                           offset: Offset(-1.5, -1.5),
-//                           color: Colors.grey
-//                       ),
-//                       Shadow( // bottomRight
-//                           offset: Offset(1.5, -1.5),
-//                           color: Colors.black
-//                       ),
-//                       Shadow( // topRight
-//                           offset: Offset(1.5, 1.5),
-//                           color: Colors.black
-//                       ),
-//                       Shadow( // topLeft
-//                           offset: Offset(-1.5, 1.5),
-//                           color: Colors.grey
-//                       ),
-//                     ],
 
                        letterSpacing: 1.6,
                        fontSize: 20.0,
@@ -408,7 +390,7 @@ class _postExpandedState extends State<postExpanded> {
                                         style: TextStyle(
                                         fontFamily:'Avenir',
                                         fontSize: 31,
-                                        color: Colors.blueAccent,
+                                        color: Colors.black,
                                         fontWeight: FontWeight.w900,),
                                         textAlign: TextAlign.left,
                                       ),

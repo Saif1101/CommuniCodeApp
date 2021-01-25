@@ -6,8 +6,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-//Models
-import 'models/postTemplateCondensed.dart';
+
 import 'models/user.dart';
 
 //PAGES
@@ -16,6 +15,7 @@ import 'searchPage.dart';
 import 'timeline.dart';
 import 'viewProfile.dart';
 import 'createNewUserPage.dart';
+import 'models/postTemplateCondensed.dart';
 
 
 
@@ -25,6 +25,7 @@ import 'createNewUserPage.dart';
 
 final Reference firebaseStorageRef = FirebaseStorage.instance.ref(); //To upload and storage the images
 final cookiesRef = FirebaseFirestore.instance.collection('cookies');
+final timelineRef = FirebaseFirestore.instance.collection('timeline'); //To store posts that show in each users' timeline
 final postsRef = FirebaseFirestore.instance.collection('posts'); //To store information about the posts(title/description/tags/urls/ImageUrl)
 final usersRef = FirebaseFirestore.instance.collection('users');//To store information about user profiles (id/username/email/displayPhoto/displayName/bio)
 final commentsRef = FirebaseFirestore.instance.collection('comments');//To store comment information
@@ -75,7 +76,7 @@ class _loginPageOnlyGoogleState extends State<loginPageOnlyGoogle> {
     });
   }
 
-  handleSignIn(GoogleSignInAccount account)async{
+  handleSignIn(GoogleSignInAccount account) async {
     if(account != null){
       print("User signed in: $account ");
       await createUserInFirestore();
@@ -105,6 +106,7 @@ class _loginPageOnlyGoogleState extends State<loginPageOnlyGoogle> {
      final usernameAndLanguages = await Navigator.push(context, MaterialPageRoute(builder: (context) => createNewUserPage()));
 
      usersRef.doc(user.id).set({
+       'cookies': 0,
        'id':user.id,
        'username':usernameAndLanguages['username'],
        'photoUrl':user.photoUrl,
@@ -135,9 +137,13 @@ class _loginPageOnlyGoogleState extends State<loginPageOnlyGoogle> {
                 image: AssetImage('assets/images/ThemeDark.png'),
                 fit: BoxFit.fill,)),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+
+              ClipRRect(
+                  borderRadius: BorderRadius.all(Radius.circular(22)),
+                  child: Image(image: AssetImage("assets/images/CodingInventoryLogo.png"),fit: BoxFit.contain,height:300)),
               GestureDetector(
                 onTap: login,
                 child: Container(
@@ -151,6 +157,7 @@ class _loginPageOnlyGoogleState extends State<loginPageOnlyGoogle> {
                 ),
 
               ),
+              SizedBox(height:25),
             ],
           ),
         ),
@@ -189,7 +196,7 @@ class _loginPageOnlyGoogleState extends State<loginPageOnlyGoogle> {
       body: PageView(
         children: <Widget>[
           viewProfile(profileID: currentUser?.id),
-          Timeline(),
+          Timeline(currentUser : currentUser),
           createPost(currentUser : currentUser),
           search(),
           activityFeed(),
@@ -200,8 +207,8 @@ class _loginPageOnlyGoogleState extends State<loginPageOnlyGoogle> {
       ),
       bottomNavigationBar: CurvedNavigationBar(
         color: Colors.white,
-        buttonBackgroundColor: Colors.white,
-        backgroundColor: Color(0xFF0f0230),
+        buttonBackgroundColor: Colors.grey[200],
+        backgroundColor: Colors.white30,
         items: <Widget>[
           RadiantGradientMask(
             child: Icon(Icons.person,

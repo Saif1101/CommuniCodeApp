@@ -4,10 +4,22 @@
   },
   "emulators": {
     "functions": {
-      "port": null
+      "port": 5001
     },
     "ui": {
-      "enabled": true
+      "enabled": true,
+      "host": "localhost",
+      "port": 4000
+    },
+    "database": {
+      "port": 9000
+    },
+    "auth": {
+      "port": 9099
+    },
+    "firestore": {
+      "host": "0.0.0.0",
+      "port": 8080
     }
   }
 }

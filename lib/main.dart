@@ -1,11 +1,10 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:coding_inventory/createNewUserPage.dart';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'comments.dart';
+
 import 'googleLoginScreen.dart';
 
-void main() async {
+Future <void> main() async {
 //  FirebaseFirestore.instance.settings(timestampsInSnapshotsEnabled:true).then(
 //      (_){
 //        print("Timestamps enablesd in snapshots \n");
@@ -14,6 +13,7 @@ void main() async {
 //  });
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+
   runApp(MyApp());
 
 }

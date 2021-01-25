@@ -1,3 +1,4 @@
+import 'package:coding_inventory/models/postTemplateCondensed.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -27,7 +28,7 @@ class createPost extends StatefulWidget {
   _createPostState createState() => _createPostState();
 }
 
-class _createPostState extends State<createPost> {
+class _createPostState extends State<createPost> with AutomaticKeepAliveClientMixin<createPost> {
   TextEditingController _titleController = TextEditingController(); //Controller for post title field
   TextEditingController _descController = TextEditingController();  //Controller for post description field
 
@@ -261,17 +262,20 @@ class _createPostState extends State<createPost> {
   Widget uploadGestureDetector(){
     setState(() {
     });
-    return GestureDetector(
-      onTap: isUploading? null:()=>handleSubmit(),
-      child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 5.0),
-          child: Icon(Icons.file_upload,
-              size: 35.0,
-              color: Colors.white
-      ),
-    ));
+    return RadiantGradientMask(
+      child: GestureDetector(
+        onTap: isUploading? null:()=>handleSubmit(),
+        child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 5.0),
+            child: Icon(Icons.file_upload,
+                size: 35.0,
+                color: Colors.white
+        ),
+      )),
+    );
   }
 
+  bool get wantKeepAlive => true;
 
 //////////////////////////////////////////////////////////////////Building the screen////////////////////////////////////////////
   @override
@@ -280,18 +284,12 @@ class _createPostState extends State<createPost> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-          flexibleSpace: Image(image: AssetImage('assets/images/ThemeDark.png'),
-              fit: BoxFit.cover),
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              ///ADD PHOTO LOGO,
-              ///
 
-            ],
-          ),
-          backgroundColor:  Colors.black54,
-          elevation: 0.0,
+          flexibleSpace: Image(image: AssetImage('assets/images/whiteBG.png'),
+              fit: BoxFit.cover),
+          title: Center(child: Text("Add a post", style: TextStyle(color:Colors.black, fontWeight: FontWeight.w900,fontSize: 32.0),)),
+          backgroundColor:  Colors.white,
+          elevation: 10.0,
           actions: <Widget>[
             isUploading?circularProgressAppBar():uploadGestureDetector()
           ]

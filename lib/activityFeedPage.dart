@@ -29,8 +29,10 @@ class _activityFeedState extends State<activityFeed> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Center(child: Text("Activity", style: TextStyle(fontSize: 32.0),)),
-        flexibleSpace: Image(image: AssetImage('assets/images/ThemeDark.png'),
+        elevation: 10,
+        backgroundColor: Colors.white,
+          title: Center(child: Text("Activity", style: TextStyle(color:Colors.black,fontWeight: FontWeight.w900,fontSize: 32.0),)),
+        flexibleSpace: Image(image: AssetImage('assets/images/whiteBG.png'),
             fit: BoxFit.cover),
       ),
       body: Stack(

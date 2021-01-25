@@ -2,6 +2,8 @@ const functions = require('firebase-functions');
 const admin =  require('firebase-admin');
 admin.initializeApp();
 
+
+
 // // Create and Deploy Your First Cloud Functions
 // // https://firebase.google.com/docs/functions/write-firebase-functions
 //
@@ -9,10 +11,11 @@ admin.initializeApp();
 //   functions.logger.info("Hello logs!", {structuredData: true});
 //   response.send("Hello from Firebase!");
 // });
-console.log("Follower Created", snapshot.id)
+
 exports.onCreateFollower = functions.firestore
-.doc("/followers/{userID}/userFollowers/{followerID}")
+.document("/followers/{userID}/userFollowers/{followerID}")
 .onCreate( async (snapshot,context)=>{
+console.log("Follower Created", snapshot.id)
 const userId = context.params.userID
 const followerId = context.params.followerID
 
@@ -20,11 +23,11 @@ const followerId = context.params.followerID
  const followedUserPostsRef = admin
  .firestore()
  .collection('posts')
- .doc(userId)
+ .doc(userID)
  .collection('userPosts');
 
  // 2) Get following user's timeline ref
- const timelinePostsRef - admin
+ const timelinePostsRef = admin
  .firestore()
  .collection('timeline')
  .doc(followerID)
@@ -44,14 +47,14 @@ const querySnapshot = await followedUserPostsRef.get();
   })
 
  exports.onDeleteFollower = functions.firestore
- .doc("/followers/{userID}/userFollowers/{followerID}")
+ .document("/followers/{userID}/userFollowers/{followerID}")
  .onDelete(async (snapshot,context)=> {
     console.log("Follower Deleted", snapshot.id);
 
     const userID = context.params.userID;
     const followerID = context.params.followerID;
 
-    const timelinePostsRef - admin
+    const timelinePostsRef = admin
      .firestore()
      .collection('timeline')
      .doc(followerID)
@@ -68,7 +71,7 @@ const querySnapshot = await followedUserPostsRef.get();
 
      // when a post is created, add post to timeline of each follower(of the post owner)
  exports.onCreatePost = functions.firestore
-            .doc('/posts/{userID}/userPosts/{postID}')
+            .document('/posts/{userID}/userPosts/{postID}')
             .onCreate( async (snapshot, context)=>{
             const postCreated = snapshot.data();
 
@@ -97,7 +100,7 @@ const querySnapshot = await followedUserPostsRef.get();
             })
 
  exports.onCreatePost = functions.firestore
-      .doc('/posts/{userID}/userPosts/{postID}')
+      .document('/posts/{userID}/userPosts/{postID}')
       .onCreate( async (snapshot, context)=>{
       const postCreated = snapshot.data();
 
@@ -126,7 +129,7 @@ const querySnapshot = await followedUserPostsRef.get();
       })
 
  exports.onDeletePost = functions.firestore
-      .doc('/posts/{userID}/userPosts/{postID}')
+      .document('/posts/{userID}/userPosts/{postID}')
       .onCreate( async (snapshot, context)=>{
       const postCreated = snapshot.data();
 
@@ -154,9 +157,9 @@ const querySnapshot = await followedUserPostsRef.get();
       if(doc.exists){
       doc.ref.delete();
       }
-      })
       });
-      })
+      });
+      });
 
 
 

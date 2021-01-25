@@ -13,7 +13,8 @@ class Post extends StatefulWidget {
   final String username;
   final String description;
   final String mediaUrl;
-  final List urlList;final List tags;
+  final List urlList;
+  final List tags;
 
   Post({
     this.postTitle,
