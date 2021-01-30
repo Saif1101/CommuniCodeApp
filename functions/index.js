@@ -67,7 +67,7 @@ const querySnapshot = await followedUserPostsRef.get();
      }
      }
      )
-      })
+ })
 
      // when a post is created, add post to timeline of each follower(of the post owner)
  exports.onCreatePost = functions.firestore
@@ -98,35 +98,6 @@ const querySnapshot = await followedUserPostsRef.get();
             .set(postCreated);
             });
             })
-
- exports.onCreatePost = functions.firestore
-      .document('/posts/{userID}/userPosts/{postID}')
-      .onCreate( async (snapshot, context)=>{
-      const postCreated = snapshot.data();
-
-      const userID = context.params.userID;
-      const postID = context.params.postID;
-
-      //1) Get all the followers of the user who made the post
-      const userFollowersRef = admin.firestore()
-      .collection('followers')
-      .doc(userID)
-      .collection("userFollowers");
-
-      const querySnapshot = await userFollowersRef.get();
-      //2) Add new post to each of the followers' timeline
-      querySnapshot.forEach(doc => {
-      const followerID = doc.id;
-
-      admin
-      .firestore()
-      .collection('timeline')
-      .doc(followerID)
-      .collection("timelinePosts")
-      .doc(postID)
-      .set(postCreated);
-      });
-      })
 
  exports.onDeletePost = functions.firestore
       .document('/posts/{userID}/userPosts/{postID}')

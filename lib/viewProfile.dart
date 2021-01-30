@@ -26,7 +26,9 @@ class viewProfile extends StatefulWidget {
   _viewProfileState createState() => _viewProfileState();
 }
 
-class _viewProfileState extends State<viewProfile> {
+class _viewProfileState extends State<viewProfile>  {
+
+
 
   final String currentUserId = googleSignIn.currentUser.id;
   bool postsLoading = false;
@@ -354,7 +356,9 @@ class _viewProfileState extends State<viewProfile> {
         .collection('userFollowers')
         .doc(currentUserId)
         .get().then((doc){
-          doc.reference.delete();
+      if (doc.exists) {
+        doc.reference.delete();
+      }
     });                               //DELETE IF PRESENT
     //delete user in the profile's following collection
     followingRef
@@ -362,8 +366,23 @@ class _viewProfileState extends State<viewProfile> {
         .collection('userFollowing')
         .doc(widget.profileID)
         .get().then((doc){
-      doc.reference.delete();
+      if (doc.exists) {
+        doc.reference.delete();
+      }
+
+      activityFeedRef
+          .doc(widget.profileID)
+          .collection('feedItems')
+          .doc(currentUserId)
+          .get()
+          .then((doc) {
+        if (doc.exists) {
+          doc.reference.delete();
+        }
+      });
     });
+
+
   }
 
   handleFollowUser(){
@@ -382,6 +401,19 @@ class _viewProfileState extends State<viewProfile> {
     .collection('userFollowing')
     .doc(widget.profileID)
     .set({});
+    //Add activity feed item for that user
+    activityFeedRef
+        .doc(widget.profileID)
+        .collection('feedItems')
+        .doc(currentUserId)
+        .set({
+      "type": "follow",
+      "ownerId": widget.profileID,
+      "username": currentUser.username,
+      "userId": currentUserId,
+      "userProfileImg": currentUser.photoUrl,
+      "timestamp": timestamp,
+    });
   }
 
   buildProfileButton(){ //building the EDIT/FOLLOW Button next to the followers/following counts
@@ -429,13 +461,18 @@ class _viewProfileState extends State<viewProfile> {
                   ),
                   child: buildProfileHeader(),
                 ),
-                Container(
-                  child: Container(
+                  SizedBox(height: MediaQuery.of(context).size.height*0.044),
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Container(
+                      padding: EdgeInsets.only(bottom:MediaQuery.of(context).size.height*0.044),
                     decoration: BoxDecoration(
                         color:  Colors.white.withOpacity(1),
-                        borderRadius: BorderRadius.only(topRight:Radius.circular(34) )
+                        borderRadius: BorderRadius.only(topRight:Radius.circular(34))
                     ),
-                    child: Column(
+                      child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         Align(alignment: Alignment(-1,-1),
                             child: Text("Posts",

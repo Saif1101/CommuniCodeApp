@@ -137,7 +137,7 @@ class timelinePostTemplate extends StatelessWidget {
                                   flex:5,
                                   child: Padding(
                                     padding: const EdgeInsets.only(left:60.0,top:13,right: 10,),
-                                    child: Text('titletitletitletitletitletitletitletitletitletitletitletitletitletitletitletitle', overflow: TextOverflow.ellipsis,maxLines: 3,softWrap: false,style: TextStyle(fontSize: 18),),
+                                    child: Text(title, overflow: TextOverflow.ellipsis,maxLines: 3,softWrap: false,style: TextStyle(fontSize: 18),),
                                   ),
                                 ),
                                 Flexible(
@@ -149,7 +149,8 @@ class timelinePostTemplate extends StatelessWidget {
                               ],
                             ),
                             trailing: GestureDetector(
-                              onTap: (){print("owner ID is ${ownerID} and post status is ${postStatus}");Navigator.push(context,MaterialPageRoute(builder: (context)=> postExpanded(cookiesToAward: cookiesToAward,postStatus: postStatus, ownerID: ownerID, title: title, description: description, tags: tags, urlList: urlList, postImageUrl: postImageUrl,postID: postID,)));},
+                              onTap: (){print("owner ID is ${ownerID} and post status is ${postStatus}");
+                              Navigator.push(context,MaterialPageRoute(builder: (context)=> postExpanded(cookiesToAward: cookiesToAward,postStatus: postStatus, ownerID: ownerID, title: title, description: description, tags: tags, urlList: urlList, postImageUrl: postImageUrl,postID: postID,)));},
                               child: RadiantGradientMask(child: Icon(Icons.arrow_forward,size: 35,color: Colors.white,),),
                             ),
                           ), //Title and Read More Button that directs to an instance of postTemplateExpanded
@@ -160,7 +161,7 @@ class timelinePostTemplate extends StatelessWidget {
                         ),
                         Expanded(child: Container(
                           decoration: BoxDecoration(
-                            color: Colors.grey[400],
+                            color: Colors.grey[700],
                             borderRadius: BorderRadius.vertical(top:Radius.circular(34),bottom:Radius.circular(34),),
                           ),
                           child: ClipRRect(borderRadius: BorderRadius.all(Radius.circular(22)),

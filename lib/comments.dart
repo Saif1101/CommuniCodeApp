@@ -119,7 +119,7 @@ class _commentModelState extends State<commentModel> {
             title: Text(comment),
             subtitle: Row(
               children: [
-                Text("sfkn11"),
+                Text("$username"),
                 Padding(
                   padding: const EdgeInsets.only(left:8.0),
                   child: Text(timeago.format(timestamp.toDate())),

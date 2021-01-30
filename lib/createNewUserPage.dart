@@ -14,7 +14,7 @@ class _createNewUserPageState extends State<createNewUserPage> {
   String username;
   String validationCheckString = "Enter Your Username";
 
-  List<ListItem<String>> languageList;
+  List<ListItem<String>> languageList = [];
 
   @override
   void initState(){

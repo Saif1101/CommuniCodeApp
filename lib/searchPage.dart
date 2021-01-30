@@ -28,7 +28,9 @@ class _searchState extends State<search> {
 
 
   handleSearch(String query){
-   Future<QuerySnapshot> users = usersRef.where("displayName", isGreaterThanOrEqualTo: query).get();
+   Future<QuerySnapshot> users = usersRef.where("username", isGreaterThanOrEqualTo: query)
+//       .where('id',isNotEqualTo: currentUser.id)
+       .get();
    setState(() {
      searchResultsFuture = users;
    });
@@ -38,7 +40,6 @@ class _searchState extends State<search> {
 
   clearSearch(){ //Clearing the search bar to allow user to change/edit entry
     searchController.clear();
-
   }
 
   buildSearchResults(){               ///Using a future builder to access
@@ -53,8 +54,10 @@ class _searchState extends State<search> {
         List<UserResult> searchResults = [];
         snapshot.data.docs.forEach((doc){
           User user = User.fromDocument(doc);
-          UserResult searchResult = UserResult(user);
-          searchResults.add(searchResult);
+          if(user.id!=currentUser.id){
+            UserResult searchResult = UserResult(user);
+            searchResults.add(searchResult);
+          }
         });
         return ListView(
           children: searchResults,
@@ -216,14 +219,14 @@ class UserResult extends StatelessWidget {
                   ///have to load it every time
                 ),
                 title: Text(
-                    user.displayName,
+                    user.username,
                     style: TextStyle(
                         color: Colors.black,
                         fontWeight: FontWeight.bold
                     )
                 ),
                 subtitle: Text(
-                  user.username,
+                  user.displayName,
                   style: TextStyle(
                     color: Colors.black38,
                   ),

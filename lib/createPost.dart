@@ -57,6 +57,9 @@ class _createPostState extends State<createPost> with AutomaticKeepAliveClientMi
     Im.Image imageFile = Im.decodeImage(selectedImage.readAsBytesSync());
     final compressedImageFile = File('$path/img_$postID.jpg')
       ..writeAsBytesSync(Im.encodeJpg(imageFile,quality:85));
+    setState((){
+      selectedImage = compressedImageFile;
+    });
   }
   //////////////////////////////////////////////////////////////////////////////////////////////HANDLING UPLOAD///////////////////////////////////////////////////////
 
@@ -91,6 +94,7 @@ class _createPostState extends State<createPost> with AutomaticKeepAliveClientMi
       'timestamp': timestamp,
       'likes':{},
     });
+
     setState(() {
       selectedImage = null;
       dynamicList = [];
@@ -104,8 +108,32 @@ class _createPostState extends State<createPost> with AutomaticKeepAliveClientMi
 
   }
 
+  cleanLinks(List <String> linksList){
+    int i =0;
+    while(i<linksList.length){
+      if(linksList[i] == 'Empty'){
+        linksList.removeAt(i);
+      }
+    }
 
-  handleSubmit() async{
+
+//    for(int i=0; i<(listlen)/2; i++){
+//      print('${linksList} ${linksList.length}');
+//      if(linksList[i+1]=='' || linksList[i].length==0){
+//        linksList.removeAt(i);linksList.removeAt(i);
+//        i=0;
+//      }
+//      print('${linksList} ${linksList.length}');
+//      print(i);
+//    }
+//    print(linksList.length);
+ }
+
+
+  handleSubmit() async {
+    print(formInfo);
+    cleanLinks(formInfo);
+    print(formInfo);
     if(selectedImage!= null && postTitle!=null && desc!= null){
       setState(() {
         isUploading=true;
@@ -168,8 +196,8 @@ class _createPostState extends State<createPost> with AutomaticKeepAliveClientMi
   addForm(){
     setState((){
       dynamicList.add(new linkIconBoxField(index : index,parent: this));
-      formInfo.insert(index, '');
-      formInfo.insert(index+1, '');
+      formInfo.insert(index, 'Empty');
+      formInfo.insert(index+1, 'Empty');
       index = index+2;
     });
   }
@@ -284,7 +312,6 @@ class _createPostState extends State<createPost> with AutomaticKeepAliveClientMi
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-
           flexibleSpace: Image(image: AssetImage('assets/images/whiteBG.png'),
               fit: BoxFit.cover),
           title: Center(child: Text("Add a post", style: TextStyle(color:Colors.black, fontWeight: FontWeight.w900,fontSize: 32.0),)),
@@ -297,7 +324,7 @@ class _createPostState extends State<createPost> with AutomaticKeepAliveClientMi
       body:SingleChildScrollView(
         child: Column(
           children: <Widget>[
-            SizedBox(height: 5,),
+            SizedBox(height: 35,),
             GestureDetector(
               onTap: (){
                 getImage();

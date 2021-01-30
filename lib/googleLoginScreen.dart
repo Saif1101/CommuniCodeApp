@@ -2,6 +2,7 @@ import 'dart:core';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:coding_inventory/activityFeedPage.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
+import 'package:firebase_auth/firebase_auth.dart' as firebaseAuth;
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -24,7 +25,7 @@ import 'models/postTemplateCondensed.dart';
 
 
 final Reference firebaseStorageRef = FirebaseStorage.instance.ref(); //To upload and storage the images
-final cookiesRef = FirebaseFirestore.instance.collection('cookies');
+
 final timelineRef = FirebaseFirestore.instance.collection('timeline'); //To store posts that show in each users' timeline
 final postsRef = FirebaseFirestore.instance.collection('posts'); //To store information about the posts(title/description/tags/urls/ImageUrl)
 final usersRef = FirebaseFirestore.instance.collection('users');//To store information about user profiles (id/username/email/displayPhoto/displayName/bio)
@@ -34,6 +35,7 @@ final followingRef = FirebaseFirestore.instance.collection('following');//To sto
 final activityFeedRef = FirebaseFirestore.instance.collection('feed');//To store data and build an activity feeds for users
 
 final GoogleSignIn googleSignIn = GoogleSignIn();
+final firebaseAuth.FirebaseAuth _auth = firebaseAuth.FirebaseAuth.instance;
 final DateTime timestamp = DateTime.now();
 
 User currentUser; ///By creating a user variable containing all the data
@@ -54,8 +56,22 @@ class _loginPageOnlyGoogleState extends State<loginPageOnlyGoogle> {
     googleSignIn.signOut();
   }
 
-  login(){
-    googleSignIn.signIn();
+  login() async {
+    final GoogleSignInAccount googleSignInAccount = await googleSignIn.signIn();
+    final GoogleSignInAuthentication googleSignInAuthentication = await googleSignInAccount.authentication;
+
+    final firebaseAuth.AuthCredential credential = firebaseAuth.GoogleAuthProvider.credential(
+      accessToken: googleSignInAuthentication.accessToken,
+      idToken: googleSignInAuthentication.idToken,
+    );
+//    print("Current user id: ${currentUser.id}");
+
+
+    final firebaseAuth.UserCredential authResult = await _auth.signInWithCredential(credential);
+
+    print("auth id token: ${googleSignInAuthentication.idToken}");
+    print("Firebase auth id: ${authResult.credential}");
+
   }
 
   @override
@@ -68,7 +84,7 @@ class _loginPageOnlyGoogleState extends State<loginPageOnlyGoogle> {
     }, onError:(err) {
       print("ERROR : $err");
     } );
-    // Re authenticate user when app is opened
+//     Re authenticate user when app is opened
     googleSignIn.signInSilently(suppressErrors: false).then((account){
       handleSignIn(account);
     }, onError: (err){
@@ -96,7 +112,17 @@ class _loginPageOnlyGoogleState extends State<loginPageOnlyGoogle> {
     /* 1) Check if user already exists in the firebase database
     according to their ID */
     final GoogleSignInAccount user = googleSignIn.currentUser;
-    print("GoogleSingINAccountUSerId which will form the base for document in firebase ${user.id}");
+    print("GoogleSignIn Account UserId which will form the base for document in firebase ${user.id}");
+    final GoogleSignInAuthentication googleSignInAuthentication = await user.authentication;
+
+    final firebaseAuth.AuthCredential credential = firebaseAuth.GoogleAuthProvider.credential(
+      accessToken: googleSignInAuthentication.accessToken,
+      idToken: googleSignInAuthentication.idToken,
+    );
+//    print("Current user id: ${currentUser.id}");
+
+
+    final firebaseAuth.UserCredential authResult = await _auth.signInWithCredential(credential);
     DocumentSnapshot doc = await usersRef.doc(user.id).get();
 
     if(!doc.exists){

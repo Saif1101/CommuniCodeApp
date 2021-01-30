@@ -216,26 +216,34 @@ class _editProfileState extends State<editProfile> {
   }
 
   updateProfileData(){
+    print("Update button tapped");
     List<String> newSelectedLanguages = [];
     for(int i = 0 ; i<languageList.length; i++){
       if(languageList[i].isSelected)
         newSelectedLanguages.add(languageList[i].language);
     };
+    print(newSelectedLanguages);
+
+    print("${usernameController.text}");
+    print("${userBioController.text}");
 
     setState(() {
       usernameController.text.trim().length<3||
       usernameController.text.isEmpty? _userNameValid = false : _userNameValid = true;
 
-      userBioController.text.trim().length>80||
-          userBioController.text.isEmpty? _bioValid = false : _bioValid = true;
+      userBioController.text.trim().length>80 ||
+          userBioController.text.isNotEmpty? _bioValid = false : _bioValid = true;
     });
+    print(_userNameValid);
+    print(_bioValid);
     if(_userNameValid && _bioValid){
       usersRef.doc(widget.currentUserID).update({
         'languages': newSelectedLanguages,
         'username': usernameController.text.trim(),
         'bio': userBioController.text.trim(),
       });
-      SnackBar snackbar = SnackBar(content: Text("Profile updated! Changes will be reflected when you refresh."));
+      print("User and bio valid");
+      SnackBar snackbar = SnackBar(backgroundColor: Colors.black,content: Text("Profile updated! Changes will be reflected when you refresh."));
       _scaffoldKey.currentState.showSnackBar(snackbar);
       Timer(Duration(seconds: 3), () {
        Navigator.pop(context);
@@ -245,7 +253,7 @@ class _editProfileState extends State<editProfile> {
       SnackBar snackbar = SnackBar(content: Text("Username too short"));
       _scaffoldKey.currentState.showSnackBar(snackbar);
     }
-    else if(userBioController.text.trim().length>80){
+    else if(userBioController.text.trim().length>80 || userBioController.text.trim().isEmpty){
       SnackBar snackbar = SnackBar(content: Text("Bio should be less than 80 words"));
       _scaffoldKey.currentState.showSnackBar(snackbar);
     }
