@@ -1,12 +1,13 @@
 import 'dart:core';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:coding_inventory/activityFeedPage.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
+import 'package:firebase_auth/firebase_auth.dart' as firebaseAuth;
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-//Models
-import 'models/postTemplateCondensed.dart';
+
 import 'models/user.dart';
 
 //PAGES
@@ -15,6 +16,7 @@ import 'searchPage.dart';
 import 'timeline.dart';
 import 'viewProfile.dart';
 import 'createNewUserPage.dart';
+import 'models/postTemplateCondensed.dart';
 
 
 
@@ -24,13 +26,16 @@ import 'createNewUserPage.dart';
 
 final Reference firebaseStorageRef = FirebaseStorage.instance.ref(); //To upload and storage the images
 
+final timelineRef = FirebaseFirestore.instance.collection('timeline'); //To store posts that show in each users' timeline
 final postsRef = FirebaseFirestore.instance.collection('posts'); //To store information about the posts(title/description/tags/urls/ImageUrl)
 final usersRef = FirebaseFirestore.instance.collection('users');//To store information about user profiles (id/username/email/displayPhoto/displayName/bio)
 final commentsRef = FirebaseFirestore.instance.collection('comments');//To store comment information
-final followersRef = FirebaseFirestore.instance.collection('followers');//To store comment information
-final followingRef = FirebaseFirestore.instance.collection('following');//To store comment information
+final followersRef = FirebaseFirestore.instance.collection('followers');//To store followers information
+final followingRef = FirebaseFirestore.instance.collection('following');//To store following information
+final activityFeedRef = FirebaseFirestore.instance.collection('feed');//To store data and build an activity feeds for users
 
 final GoogleSignIn googleSignIn = GoogleSignIn();
+final firebaseAuth.FirebaseAuth _auth = firebaseAuth.FirebaseAuth.instance;
 final DateTime timestamp = DateTime.now();
 
 User currentUser; ///By creating a user variable containing all the data
@@ -51,8 +56,22 @@ class _loginPageOnlyGoogleState extends State<loginPageOnlyGoogle> {
     googleSignIn.signOut();
   }
 
-  login(){
-    googleSignIn.signIn();
+  login() async {
+    final GoogleSignInAccount googleSignInAccount = await googleSignIn.signIn();
+    final GoogleSignInAuthentication googleSignInAuthentication = await googleSignInAccount.authentication;
+
+    final firebaseAuth.AuthCredential credential = firebaseAuth.GoogleAuthProvider.credential(
+      accessToken: googleSignInAuthentication.accessToken,
+      idToken: googleSignInAuthentication.idToken,
+    );
+//    print("Current user id: ${currentUser.id}");
+
+
+    final firebaseAuth.UserCredential authResult = await _auth.signInWithCredential(credential);
+
+    print("auth id token: ${googleSignInAuthentication.idToken}");
+    print("Firebase auth id: ${authResult.credential}");
+
   }
 
   @override
@@ -65,7 +84,7 @@ class _loginPageOnlyGoogleState extends State<loginPageOnlyGoogle> {
     }, onError:(err) {
       print("ERROR : $err");
     } );
-    // Re authenticate user when app is opened
+//     Re authenticate user when app is opened
     googleSignIn.signInSilently(suppressErrors: false).then((account){
       handleSignIn(account);
     }, onError: (err){
@@ -73,10 +92,10 @@ class _loginPageOnlyGoogleState extends State<loginPageOnlyGoogle> {
     });
   }
 
-  handleSignIn(GoogleSignInAccount account){
+  handleSignIn(GoogleSignInAccount account) async {
     if(account != null){
       print("User signed in: $account ");
-      createUserInFirestore();
+      await createUserInFirestore();
       setState(() {
         isAuth=true;
       });
@@ -93,7 +112,17 @@ class _loginPageOnlyGoogleState extends State<loginPageOnlyGoogle> {
     /* 1) Check if user already exists in the firebase database
     according to their ID */
     final GoogleSignInAccount user = googleSignIn.currentUser;
-    print("GoogleSingINAccountUSerId which will form the base for document in firebase ${user.id}");
+    print("GoogleSignIn Account UserId which will form the base for document in firebase ${user.id}");
+    final GoogleSignInAuthentication googleSignInAuthentication = await user.authentication;
+
+    final firebaseAuth.AuthCredential credential = firebaseAuth.GoogleAuthProvider.credential(
+      accessToken: googleSignInAuthentication.accessToken,
+      idToken: googleSignInAuthentication.idToken,
+    );
+//    print("Current user id: ${currentUser.id}");
+
+
+    final firebaseAuth.UserCredential authResult = await _auth.signInWithCredential(credential);
     DocumentSnapshot doc = await usersRef.doc(user.id).get();
 
     if(!doc.exists){
@@ -103,6 +132,7 @@ class _loginPageOnlyGoogleState extends State<loginPageOnlyGoogle> {
      final usernameAndLanguages = await Navigator.push(context, MaterialPageRoute(builder: (context) => createNewUserPage()));
 
      usersRef.doc(user.id).set({
+       'cookies': 0,
        'id':user.id,
        'username':usernameAndLanguages['username'],
        'photoUrl':user.photoUrl,
@@ -133,9 +163,13 @@ class _loginPageOnlyGoogleState extends State<loginPageOnlyGoogle> {
                 image: AssetImage('assets/images/ThemeDark.png'),
                 fit: BoxFit.fill,)),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+
+              ClipRRect(
+                  borderRadius: BorderRadius.all(Radius.circular(22)),
+                  child: Image(image: AssetImage("assets/images/CodingInventoryLogo.png"),fit: BoxFit.contain,height:300)),
               GestureDetector(
                 onTap: login,
                 child: Container(
@@ -149,6 +183,7 @@ class _loginPageOnlyGoogleState extends State<loginPageOnlyGoogle> {
                 ),
 
               ),
+              SizedBox(height:25),
             ],
           ),
         ),
@@ -187,9 +222,10 @@ class _loginPageOnlyGoogleState extends State<loginPageOnlyGoogle> {
       body: PageView(
         children: <Widget>[
           viewProfile(profileID: currentUser?.id),
-          Timeline(),
+          Timeline(currentUser : currentUser),
           createPost(currentUser : currentUser),
           search(),
+          activityFeed(),
         ],
         physics: NeverScrollableScrollPhysics(),
         controller: pageController,
@@ -197,8 +233,8 @@ class _loginPageOnlyGoogleState extends State<loginPageOnlyGoogle> {
       ),
       bottomNavigationBar: CurvedNavigationBar(
         color: Colors.white,
-        buttonBackgroundColor: Colors.white,
-        backgroundColor: Color(0xFF0f0230),
+        buttonBackgroundColor: Colors.grey[200],
+        backgroundColor: Colors.white30,
         items: <Widget>[
           RadiantGradientMask(
             child: Icon(Icons.person,
@@ -221,15 +257,12 @@ class _loginPageOnlyGoogleState extends State<loginPageOnlyGoogle> {
                 size: 25),
           ),
           RadiantGradientMask(
-            child: Icon(Icons.exit_to_app,
+            child: Icon(Icons.notifications_active,
                 color: Colors.white,
                 size: 25),
           ),
         ],
         onTap: (index) {
-          if(index == 4){
-            logout();
-          }
           //Handle button tap
           navigationOnTap(index);
         },
@@ -241,46 +274,5 @@ class _loginPageOnlyGoogleState extends State<loginPageOnlyGoogle> {
   @override
   Widget build(BuildContext context) {
     return isAuth ? homeScreen() : _buildLoginPage();
-//    return Scaffold(
-//      body:Stack(
-//        children: [Container(
-//          height: double.infinity,
-//          width: double.infinity,
-//          decoration: BoxDecoration(
-//          image: DecorationImage(
-//          image: AssetImage('assets/images/ThemeDark.png'),
-//    fit: BoxFit.fill,)),
-//          child: Column(
-//            mainAxisAlignment: MainAxisAlignment.center,
-//            crossAxisAlignment: CrossAxisAlignment.center,
-//            children: [
-//              GestureDetector(
-//                onTap: login,
-//                child: Container(
-//                  width: 260.0,
-//                  height: 60.0,
-//                  decoration: BoxDecoration(
-//                    image: DecorationImage(
-//                      image: AssetImage('assets/images/google_sign_up.png'),
-//                          fit: BoxFit.cover),
-//                    )
-//                  ),
-//
-//                ),
-//            ],
-//          ),
-//          ),
-//          Container(
-//              width: 260.0,
-//              height: 60.0,
-//              decoration: BoxDecoration(
-//                image: DecorationImage(
-//                    image: AssetImage('assets/images/logoBlackBG_preview_rev_1.png'),
-//                    fit: BoxFit.cover),
-//              )
-//          ),
-//      ],
-//      ),
-//    );
   }
 }

@@ -24,11 +24,13 @@ class _searchState extends State<search> {
   TextEditingController searchController = TextEditingController(); // To control/clear the search bar
 
   Future<QuerySnapshot> searchResultsFuture;
-  List<UserResult> searchResults = [];//Store and update the search results by using the setState function from inside the handleSearch function
+//  List<UserResult> searchResults = [];//Store and update the search results by using the setState function from inside the handleSearch function
 
 
   handleSearch(String query){
-   Future<QuerySnapshot> users = usersRef.where("displayName", isGreaterThanOrEqualTo: query).get();
+   Future<QuerySnapshot> users = usersRef.where("username", isGreaterThanOrEqualTo: query)
+//       .where('id',isNotEqualTo: currentUser.id)
+       .get();
    setState(() {
      searchResultsFuture = users;
    });
@@ -49,10 +51,13 @@ class _searchState extends State<search> {
         if(!snapshot.hasData){
           return Center(child:CircularProgressIndicator(),);
         }
+        List<UserResult> searchResults = [];
         snapshot.data.docs.forEach((doc){
           User user = User.fromDocument(doc);
-          UserResult searchResult = UserResult(user);
-          searchResults.add(searchResult);
+          if(user.id!=currentUser.id){
+            UserResult searchResult = UserResult(user);
+            searchResults.add(searchResult);
+          }
         });
         return ListView(
           children: searchResults,
@@ -80,33 +85,97 @@ class _searchState extends State<search> {
             ),
           ],
         ),
-        child: TextFormField(
-          controller: searchController,
-          decoration: InputDecoration(
-            contentPadding: EdgeInsets.all(20),
-            hintText: 'Search for other users..',
-            filled: true,
-            prefixIcon: Icon(
-              Icons.account_box,
-              size: 28.0,
+        child: Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: TextFormField(
+            controller: searchController,
+            decoration: InputDecoration(
+              contentPadding: EdgeInsets.all(20),
+              hintText: 'Search for other users..',
+              filled: true,
+              prefixIcon: Icon(
+                Icons.account_box,
+                size: 28.0,
+              ),
+              suffixIcon: IconButton(
+                icon: Icon(Icons.clear),
+                onPressed: () => clearSearch(),
+              )
             ),
-            suffixIcon: IconButton(
-              icon: Icon(Icons.clear),
-              onPressed: () => clearSearch(),
-            )
+                onFieldSubmitted: handleSearch, // passes in the typed query to the function handleSearch
           ),
-              onFieldSubmitted: handleSearch, // passes in the typed query to the function handleSearch
         ),
       )
     );
   }
 
   buildBodyWallpaper(){
-    return Container(
-              decoration: BoxDecoration(
-                color: Color(0xFF0f0230),
-              ),
-        );
+    return Stack(
+      children: [
+        Positioned.fill(
+            child: Image(
+              image: AssetImage('assets/images/grayBG.png'),
+              fit : BoxFit.fill,
+            )
+        ),
+        Container(
+                  child: Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(18.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Divider(color: Colors.black,thickness: 3.0,),
+//                Container(
+//                  decoration: BoxDecoration(
+//                      image: DecorationImage(
+//                          image: AssetImage('assets/images/noPostsToShow.png')
+//                      )
+//                  ),
+//                ),
+                          Align(
+                            alignment: Alignment(1,1),
+                            child: Text("Search",
+                              textAlign: TextAlign.right,
+                              style: TextStyle(color: Colors.black,
+                                fontSize: 32,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                          Align(
+                            alignment: Alignment(1,1),
+                            child: Text("For",
+                              textAlign: TextAlign.right,
+                              style: TextStyle(color: Colors.black,
+
+                                fontSize: 32,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                          Align(
+                            alignment: Alignment(1,1),
+                            child: Text("Users",
+                              textAlign: TextAlign.right,
+                              style: TextStyle(color: Colors.black,
+
+                                fontSize: 32,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                          Divider(color: Colors.black,thickness: 3.0,),
+                          SizedBox(height: 50,),
+
+
+                        ],
+                      ),
+                    ),
+                  ),
+            ),
+      ],
+    );
   }
 
 
@@ -150,14 +219,14 @@ class UserResult extends StatelessWidget {
                   ///have to load it every time
                 ),
                 title: Text(
-                    user.displayName,
+                    user.username,
                     style: TextStyle(
                         color: Colors.black,
                         fontWeight: FontWeight.bold
                     )
                 ),
                 subtitle: Text(
-                  user.username,
+                  user.displayName,
                   style: TextStyle(
                     color: Colors.black38,
                   ),

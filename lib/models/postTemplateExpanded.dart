@@ -6,10 +6,13 @@ import 'package:coding_inventory/models/postTemplateCondensed.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../comments.dart';
 import '../googleLoginScreen.dart';
+
+
 
 
 class postExpanded extends StatefulWidget {
@@ -20,12 +23,14 @@ class postExpanded extends StatefulWidget {
   final List<String> urlList;
   final String postImageUrl;
   final String postID;
+  final String postStatus;
+  final int cookiesToAward;
 
 
   @override
-  _postExpandedState createState() => _postExpandedState(ownerID: ownerID, title: title, description: description, tags: tags, urlList: urlList, postImageUrl: postImageUrl, postID: postID);
+  _postExpandedState createState() => _postExpandedState(cookiesToAward: cookiesToAward,postStatus: postStatus, ownerID: ownerID, title: title, description: description, tags: tags, urlList: urlList, postImageUrl: postImageUrl, postID: postID);
 
-  postExpanded({this.ownerID, this.title, this.description, this.tags, this.urlList,
+  postExpanded({this.cookiesToAward,this.postStatus,this.ownerID, this.title, this.description, this.tags, this.urlList,
       this.postImageUrl,this.postID});
 
 
@@ -41,18 +46,25 @@ class _postExpandedState extends State<postExpanded> {
  final List<String> tags;
  final List<String> urlList;
  final String postImageUrl;
+ final String postStatus;
+ final int cookiesToAward;
 
- _postExpandedState({this.ownerID, this.title,this.description,this.tags,this.urlList,this.postImageUrl,this.postID});
+ _postExpandedState({this.cookiesToAward,this.postStatus, this.ownerID, this.title,this.description,this.tags,this.urlList,this.postImageUrl,this.postID});
 
  int numComments = 0;
 
 
+
+
+
   @override
   void initState() {
-    // TODO: implement initStat
+    // TODO: implement initState
     super.initState();
+    print("owner ID is ${ownerID}");
     getNumberOfComments();
     buildLinkButtonRow();
+
   }
 
   getNumberOfComments() async {
@@ -93,7 +105,7 @@ class _postExpandedState extends State<postExpanded> {
             return Container(
               decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(22),
-                  border: Border.all(width:2, color: Colors.black)
+                  border: Border.all(width:3, color: Colors.black)
               ),
               margin: EdgeInsets.only(right: 13, left: 13),
               child: Padding(
@@ -155,6 +167,65 @@ class _postExpandedState extends State<postExpanded> {
   } // Method that processes the urls to yield OvalButtons that direct user to links
 
 
+ //Handling deletion of posts
+
+ deletePost() async {
+    //delete the post itself
+    postsRef.doc(ownerID)
+        .collection('userPosts')
+        .doc(postID).get()
+        .then((doc){
+          if(doc.exists){
+            doc.reference.delete();
+          }
+    });
+    //delete the uploaded image for the post as well
+   firebaseStorageRef.child("post_$postID.jpg").delete();
+   //delete all activity feed notifications
+   //.....
+   //Delete all the comments
+   QuerySnapshot commentsSnapshot = await commentsRef
+    .doc(postID)
+    .collection('comments')
+    .get();
+   commentsSnapshot.docs.forEach((doc){
+     if(doc.exists){
+       doc.reference.delete();
+     }
+   });
+
+ }
+
+ handleDeletePost(BuildContext parentContext){
+   Alert(
+     context: context,
+     type: AlertType.info,
+     title: "",
+     desc: "Remove this post?",
+     buttons: [
+       DialogButton(
+         child: Text(
+           "Delete",
+           style: TextStyle(color: Colors.white, fontSize: 20),
+         ),
+         onPressed: (){
+           Navigator.pop(context);
+           deletePost();
+         },
+         width: 120,
+       ),
+       DialogButton(
+         child: Text(
+           "Cancel",
+           style: TextStyle(color: Colors.white, fontSize: 20),
+         ),
+         onPressed: () {Navigator.pop(context);},
+         width: 120,
+       )
+     ],
+   ).show();
+ }
+
  Widget _commentButton(){
    return Center(
      child: Container(
@@ -164,6 +235,8 @@ class _postExpandedState extends State<postExpanded> {
            elevation: 25.0,
            onPressed:()=>showComments(
          context,
+               ownerID: ownerID,
+         cookiesLeft: cookiesToAward,
          postImageURL : postImageUrl,
          postID: postID),
 //         padding: EdgeInsets.all(15.0),
@@ -185,24 +258,6 @@ class _postExpandedState extends State<postExpanded> {
                      'Comment',
                      style: TextStyle(
                        color: Colors.white,
-//                     shadows: [
-//                       Shadow( // bottomLeft
-//                           offset: Offset(-1.5, -1.5),
-//                           color: Colors.grey
-//                       ),
-//                       Shadow( // bottomRight
-//                           offset: Offset(1.5, -1.5),
-//                           color: Colors.black
-//                       ),
-//                       Shadow( // topRight
-//                           offset: Offset(1.5, 1.5),
-//                           color: Colors.black
-//                       ),
-//                       Shadow( // topLeft
-//                           offset: Offset(-1.5, 1.5),
-//                           color: Colors.grey
-//                       ),
-//                     ],
 
                        letterSpacing: 1.6,
                        fontSize: 20.0,
@@ -217,6 +272,83 @@ class _postExpandedState extends State<postExpanded> {
      ),
    );
  }
+
+ Widget _setPostStatusButton(){;
+ const List <Color> green = [Color(0xFF66eb54),Color(0xFF31eb63), Color(0xFF66eb54)];
+ const List <Color> red = [Color(0xFFe6e6e6),Color(0xFFcccdcf), Color(0xFFe6e6e6)];
+
+ Widget greenButton = Ink(
+   decoration: const BoxDecoration(
+     gradient: LinearGradient(
+         colors: green,
+         begin: Alignment.bottomRight,
+         end: Alignment.centerLeft),
+     borderRadius: BorderRadius.all(Radius.circular(80.0)),
+   ),
+   child: Container(
+//               constraints: const BoxConstraints(minWidth: 88.0, minHeight: 36.0), // min sizes for Material buttons
+       alignment: Alignment.center,
+       child: Text(
+           'Mark as ${postStatus == "Closed"?"open":"closed"}',
+           style: TextStyle(
+             color: Colors.white,
+             letterSpacing: 1.6,
+             fontSize: 20.0,
+             fontWeight: FontWeight.bold,
+             fontFamily: 'OpenSans',
+           )
+       )
+   ),
+ );
+ Widget redButton = Ink(
+   decoration: const BoxDecoration(
+     gradient: LinearGradient(
+         colors: red,
+         begin: Alignment.bottomRight,
+         end: Alignment.centerLeft),
+     borderRadius: BorderRadius.all(Radius.circular(80.0)),
+   ),
+   child: Container(
+//               constraints: const BoxConstraints(minWidth: 88.0, minHeight: 36.0), // min sizes for Material buttons
+       alignment: Alignment.center,
+       child: Text(
+           'Mark as ${postStatus == "Closed"?"open":"closed"}',
+           style: TextStyle(
+             color: Colors.white,
+             letterSpacing: 1.6,
+             fontSize: 20.0,
+             fontWeight: FontWeight.bold,
+             fontFamily: 'OpenSans',
+           )
+       )
+   ),
+ );
+
+   return Center(
+     child: Container(
+         padding: EdgeInsets.symmetric(vertical:1.0),
+         width: MediaQuery.of(context).size.width-50,
+         child: RaisedButton(
+           elevation: 25.0,
+           onPressed:(){
+             if(postStatus == 'Open') {
+               postsRef.doc(ownerID).collection('userPosts').doc(postID).update({'postStatus': 'Closed'});
+             }else{
+               postsRef.doc(ownerID).collection('userPosts').doc(postID).update({'postStatus': 'Open'});
+             }
+             Navigator.pop(context);
+           },
+//         padding: EdgeInsets.all(15.0),
+           shape: RoundedRectangleBorder(
+             borderRadius: BorderRadius.circular(30.0),
+           ),
+           child: postStatus=="Closed"?redButton:greenButton,
+
+         )
+     ),
+   );
+ }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -248,16 +380,25 @@ class _postExpandedState extends State<postExpanded> {
                               padding: const EdgeInsets.all(8.0),
                               child: ListTile(
 
-                                title: Text(
-                                  title,
-                                  softWrap: true,
-                                  style: TextStyle(
-                                  fontFamily:'Avenir',
-                                  fontSize: 31,
-                                  color: Colors.blueAccent,
-                                  fontWeight: FontWeight.w900,),
-                                  textAlign: TextAlign.left,
+                                title: Row(
+                                  children: [
+                                    Flexible(
+                                      child: Text(
+                                        title,
+                                        overflow: TextOverflow.fade,
+                                        softWrap: true,
+                                        style: TextStyle(
+                                        fontFamily:'Avenir',
+                                        fontSize: 31,
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.w900,),
+                                        textAlign: TextAlign.left,
+                                      ),
+                                    ),
+
+                                  ],
                                 ),
+                                subtitle: currentUser.id == ownerID?Align(alignment: Alignment.centerLeft , child: IconButton(iconSize:22.0, color: Colors.grey[400], icon: Icon(Icons.delete),onPressed:()=> handleDeletePost(context),)): Text(""),
                                 trailing: ClipOval(
                                   child: Material(
                                     color: Colors.white,
@@ -273,6 +414,8 @@ class _postExpandedState extends State<postExpanded> {
                                             RadiantGradientMask(
                                               child: IconButton(iconSize: 20, color: Colors.white,icon: Icon(Icons.message), onPressed: ()=>showComments(
                                                   context,
+                                                  ownerID: ownerID,
+                                                  cookiesLeft: cookiesToAward,
                                                   postImageURL : postImageUrl,
                                                   postID: postID)
                                               ),
@@ -306,7 +449,9 @@ class _postExpandedState extends State<postExpanded> {
                                 children: _buttons,
                               ),
                             ),
-                            _commentButton()
+                            _commentButton(),
+                            SizedBox(height: 3.0,),
+                            currentUser.id==ownerID?_setPostStatusButton():SizedBox(height:3.0),
 
                           ],
                         ),
@@ -360,9 +505,10 @@ class expandPhoto extends StatelessWidget {
   }
 }
 
-showComments(BuildContext context, {String postID, String postImageURL, String ownerID}){
+showComments(BuildContext context, {int cookiesLeft, String postID, String postImageURL, String ownerID}){
   Navigator. push(context, MaterialPageRoute(builder: (context){
     return commentsPage(
+      cookiesLeft: cookiesLeft,
       ownerID: ownerID,
       postID: postID,
       postImageURL: postImageURL,

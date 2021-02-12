@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/rendering.dart';
@@ -24,17 +26,24 @@ class viewProfile extends StatefulWidget {
   _viewProfileState createState() => _viewProfileState();
 }
 
-class _viewProfileState extends State<viewProfile> {
+class _viewProfileState extends State<viewProfile>  {
+
+
 
   final String currentUserId = googleSignIn.currentUser.id;
   bool postsLoading = false;
-  List<Widget>postTemplateTry=[];
+  List<Widget>postsList=[];
   List <Widget> badges = [];
   bool badgesLoading = false;
 
   bool isFollowing = false;
   int followerCount = 0;
   int followingCount = 0;
+
+  FutureOr onGoBack(dynamic value) {
+    setState(() {});
+  }
+
 
 
   @override
@@ -81,7 +90,7 @@ class _viewProfileState extends State<viewProfile> {
     print("Query get complete");
     setState(() {
       print("Making posts from document");
-      postTemplateTry = snapshot.docs.map<Widget>((doc) => postTemplate.fromDocument(doc)).toList();
+      postsList = snapshot.docs.map<Widget>((doc) => postTemplate.fromDocument(doc)).toList();
       print("Post making complete");
       postsLoading = false;
 
@@ -92,17 +101,16 @@ class _viewProfileState extends State<viewProfile> {
     if(postsLoading){
       return Container(
         padding: EdgeInsets.only(bottom: 10.0),
-        child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation(Colors.purple),
+        child: Column(
+          children: [
+            CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation(Colors.purple),
+            ),
+          ],
         ),
       );
-    } else if(!postsLoading && postTemplateTry.length != 0 ){
-      return SizedBox(height: 300,
-          width: MediaQuery.of(context).size.width,
-          child: Swiper(layout: SwiperLayout.STACK, itemCount: postTemplateTry.length,itemHeight: 300,itemWidth: 350, itemBuilder: (context, index){return postTemplateTry[index];},));
-
     }
-    else if(!postsLoading && postTemplateTry.length==0){
+    else if(postsList.isEmpty){
       return SizedBox(
         height: 300,
         child: Center(
@@ -112,11 +120,16 @@ class _viewProfileState extends State<viewProfile> {
         ),
       );
     }
+    else{
+      return SizedBox(height: 300,
+          width: MediaQuery.of(context).size.width,
+          child: Swiper(layout: SwiperLayout.STACK, itemCount: postsList.length,itemHeight: 300,itemWidth: 350, itemBuilder: (context, index){return postsList[index];},));
+    }
   } //Returning a SWIPER Widget containing all posts moulded in the format specified by the postTemplateCondensed
 
 
 
-  buildCountsRow(int followerCount, int followingCount) {
+  buildCountsRow(int cookieCount) {
     return Padding(
       padding: const EdgeInsets.only(
           right: 38.0, left: 38.0, top: 15, bottom: 12),
@@ -132,16 +145,15 @@ class _viewProfileState extends State<viewProfile> {
           ),
           Column(
             children: [
-              Text(followerCount.toString(),
+              CircleAvatar(
+                radius: 18,
+                  backgroundImage: AssetImage('assets/images/cookieVector.jpg')),
+              Text(cookieCount.toString(),
                 style: TextStyle(
                   color: Colors.black,
                   fontWeight: FontWeight.bold,
-                  fontSize: 25,),
+                  fontSize: 16,),
               ),
-              Text('following',
-                style: TextStyle(
-                  color: Colors.black,
-                ),)
             ],
           ),
           Container(
@@ -211,6 +223,31 @@ class _viewProfileState extends State<viewProfile> {
         );
   }
 
+//  profileHeaderListTile(){
+//    return ListTile(
+//      leading: CircleAvatar(
+//        radius: 35,
+//        backgroundImage: CachedNetworkImageProvider(
+//            user.photoUrl),
+//        //Add backgroundImage: User's Profile Image
+//      ),
+//      title: Text('${user.username}',
+//          style: GoogleFonts.oswald(
+//              fontSize: 40,
+//              color: Colors.black,
+//              fontWeight: FontWeight.w500
+//          )
+//      ),
+//      subtitle: Text('${user.displayName}',
+//        style: TextStyle(
+//          fontWeight: FontWeight.bold,
+//          color: Colors.black,
+//
+//        ),
+//      ),
+//    );
+//  }
+
   buildProfileHeader() {
     return FutureBuilder(
       future: usersRef.doc(widget.profileID).get(),
@@ -231,58 +268,36 @@ class _viewProfileState extends State<viewProfile> {
             children: [
               Card(
                 elevation: 25,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.only(left: 28.0, top: 7),
-                      child: CircleAvatar(
-                        radius: 35,
-                        backgroundImage: CachedNetworkImageProvider(
-                            user.photoUrl),
-                        //Add backgroundImage: User's Profile Image
-                      ),
-                    ), //CircleAvatar for Profile Photo
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Padding(
-                          padding: const EdgeInsets.only(left: 38.0),
-                          child: Text('${user.username}',
-                            style: GoogleFonts.oswald(
-                              fontSize: 40,
-                              color: Colors.black,
-                              fontWeight: FontWeight.w500
-                             )
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 8.0),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: <Widget>[
-                              Padding(
-                                padding: EdgeInsets.only(left: 25.0),
-                                child: Text('${user.displayName}',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black,
+                child: ListTile(
+                  leading: CircleAvatar(
+                    radius: 35,
+                    backgroundImage: CachedNetworkImageProvider(
+                        user.photoUrl),
+                    //Add backgroundImage: User's Profile Image
+                  ),
+                  title: Text('${user.username}',
+                      style: GoogleFonts.oswald(
+                          fontSize: 40,
+                          color: Colors.black,
+                          fontWeight: FontWeight.w500
+                      )
+                  ),
+                  subtitle: Text('${user.displayName}',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
 
-                                  ),
-                                ),
-                              )
-                            ],
-                          ),
-                        )
-                      ],
-                    ), // Column Containing Username and DisplayName
-
-
-                  ],
+                    ),
+                  ),
+                  trailing: currentUserId == widget.profileID?RadiantGradientMask(
+                    child: IconButton(icon: Icon(Icons.exit_to_app),
+                        color: Colors.white,
+                      onPressed: ()=> googleSignIn.signOut(),
+                    ),
+                  ):Text('')
                 ),
               ),
-              //Follwer/Following Counts, Follow Button
-              buildCountsRow(32, 12),
+              buildCountsRow(user.cookies),//Followers count and the follow/unfollow/edit profile button
               //User Bio Section
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20, vertical: 5.0),
@@ -328,7 +343,7 @@ class _viewProfileState extends State<viewProfile> {
   } // button to display given text and perform specified function
 
   pushToEditProfile(){
-    Navigator.push(context, MaterialPageRoute(builder: (context)=> editProfile(currentUserID: widget.profileID)));
+    Navigator.push(context, MaterialPageRoute(builder: (context)=> editProfile(currentUserID: widget.profileID))).then(onGoBack);
   } //Method to specify whether to direct FOLLOW/EDIT button press to edit profile page
 
   handleUnfollowUser(){
@@ -341,7 +356,9 @@ class _viewProfileState extends State<viewProfile> {
         .collection('userFollowers')
         .doc(currentUserId)
         .get().then((doc){
-          doc.reference.delete();
+      if (doc.exists) {
+        doc.reference.delete();
+      }
     });                               //DELETE IF PRESENT
     //delete user in the profile's following collection
     followingRef
@@ -349,8 +366,23 @@ class _viewProfileState extends State<viewProfile> {
         .collection('userFollowing')
         .doc(widget.profileID)
         .get().then((doc){
-      doc.reference.delete();
+      if (doc.exists) {
+        doc.reference.delete();
+      }
+
+      activityFeedRef
+          .doc(widget.profileID)
+          .collection('feedItems')
+          .doc(currentUserId)
+          .get()
+          .then((doc) {
+        if (doc.exists) {
+          doc.reference.delete();
+        }
+      });
     });
+
+
   }
 
   handleFollowUser(){
@@ -369,6 +401,19 @@ class _viewProfileState extends State<viewProfile> {
     .collection('userFollowing')
     .doc(widget.profileID)
     .set({});
+    //Add activity feed item for that user
+    activityFeedRef
+        .doc(widget.profileID)
+        .collection('feedItems')
+        .doc(currentUserId)
+        .set({
+      "type": "follow",
+      "ownerId": widget.profileID,
+      "username": currentUser.username,
+      "userId": currentUserId,
+      "userProfileImg": currentUser.photoUrl,
+      "timestamp": timestamp,
+    });
   }
 
   buildProfileButton(){ //building the EDIT/FOLLOW Button next to the followers/following counts
@@ -416,22 +461,28 @@ class _viewProfileState extends State<viewProfile> {
                   ),
                   child: buildProfileHeader(),
                 ),
-                Container(
-                  child: Container(
+                  SizedBox(height: MediaQuery.of(context).size.height*0.044),
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Container(
+                      padding: EdgeInsets.only(bottom:MediaQuery.of(context).size.height*0.044),
                     decoration: BoxDecoration(
-                        color:  Colors.white.withOpacity(0.6),
-                        borderRadius: BorderRadius.only(topRight:Radius.circular(34) )
+                        color:  Colors.white.withOpacity(1),
+                        borderRadius: BorderRadius.only(topRight:Radius.circular(34))
                     ),
-                    child: Column(
+                      child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         Align(alignment: Alignment(-1,-1),
                             child: Text("Posts",
-                              style: TextStyle(color: Colors.white,
+                              style: TextStyle(color: Colors.black,
                                   fontSize: 64,
                                   fontWeight: FontWeight.bold,
                               ),
                             ),
                         ),
+                        Divider(color: Colors.black, thickness: 2.0,),
                         buildPosts()
                       ],
                     ),

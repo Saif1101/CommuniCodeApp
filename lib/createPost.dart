@@ -1,3 +1,4 @@
+import 'package:coding_inventory/models/postTemplateCondensed.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -27,7 +28,7 @@ class createPost extends StatefulWidget {
   _createPostState createState() => _createPostState();
 }
 
-class _createPostState extends State<createPost> {
+class _createPostState extends State<createPost> with AutomaticKeepAliveClientMixin<createPost> {
   TextEditingController _titleController = TextEditingController(); //Controller for post title field
   TextEditingController _descController = TextEditingController();  //Controller for post description field
 
@@ -56,6 +57,9 @@ class _createPostState extends State<createPost> {
     Im.Image imageFile = Im.decodeImage(selectedImage.readAsBytesSync());
     final compressedImageFile = File('$path/img_$postID.jpg')
       ..writeAsBytesSync(Im.encodeJpg(imageFile,quality:85));
+    setState((){
+      selectedImage = compressedImageFile;
+    });
   }
   //////////////////////////////////////////////////////////////////////////////////////////////HANDLING UPLOAD///////////////////////////////////////////////////////
 
@@ -77,6 +81,8 @@ class _createPostState extends State<createPost> {
 
   createPostInFirestore({String mediaUrl, String title, String description, List <String> tagsList, List<String> urls}){
     postsRef.doc(widget.currentUser.id).collection('userPosts').doc(postID).set({
+      'postStatus'  : 'Open',
+      'cookiesToAward': 2,
       'postTitle': title,
       'postID': postID,
       'ownerID': widget.currentUser.id,
@@ -88,6 +94,7 @@ class _createPostState extends State<createPost> {
       'timestamp': timestamp,
       'likes':{},
     });
+
     setState(() {
       selectedImage = null;
       dynamicList = [];
@@ -101,8 +108,32 @@ class _createPostState extends State<createPost> {
 
   }
 
+  cleanLinks(List <String> linksList){
+    int i =0;
+    while(i<linksList.length){
+      if(linksList[i] == 'Empty'){
+        linksList.removeAt(i);
+      }
+    }
 
-  handleSubmit() async{
+
+//    for(int i=0; i<(listlen)/2; i++){
+//      print('${linksList} ${linksList.length}');
+//      if(linksList[i+1]=='' || linksList[i].length==0){
+//        linksList.removeAt(i);linksList.removeAt(i);
+//        i=0;
+//      }
+//      print('${linksList} ${linksList.length}');
+//      print(i);
+//    }
+//    print(linksList.length);
+ }
+
+
+  handleSubmit() async {
+    print(formInfo);
+    cleanLinks(formInfo);
+    print(formInfo);
     if(selectedImage!= null && postTitle!=null && desc!= null){
       setState(() {
         isUploading=true;
@@ -165,8 +196,8 @@ class _createPostState extends State<createPost> {
   addForm(){
     setState((){
       dynamicList.add(new linkIconBoxField(index : index,parent: this));
-      formInfo.insert(index, '');
-      formInfo.insert(index+1, '');
+      formInfo.insert(index, 'Empty');
+      formInfo.insert(index+1, 'Empty');
       index = index+2;
     });
   }
@@ -259,17 +290,20 @@ class _createPostState extends State<createPost> {
   Widget uploadGestureDetector(){
     setState(() {
     });
-    return GestureDetector(
-      onTap: isUploading? null:()=>handleSubmit(),
-      child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 5.0),
-          child: Icon(Icons.file_upload,
-              size: 35.0,
-              color: Colors.white
-      ),
-    ));
+    return RadiantGradientMask(
+      child: GestureDetector(
+        onTap: isUploading? null:()=>handleSubmit(),
+        child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 5.0),
+            child: Icon(Icons.file_upload,
+                size: 35.0,
+                color: Colors.white
+        ),
+      )),
+    );
   }
 
+  bool get wantKeepAlive => true;
 
 //////////////////////////////////////////////////////////////////Building the screen////////////////////////////////////////////
   @override
@@ -278,18 +312,11 @@ class _createPostState extends State<createPost> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-          flexibleSpace: Image(image: AssetImage('assets/images/ThemeDark.png'),
+          flexibleSpace: Image(image: AssetImage('assets/images/whiteBG.png'),
               fit: BoxFit.cover),
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              ///ADD PHOTO LOGO,
-              ///
-
-            ],
-          ),
-          backgroundColor:  Colors.black54,
-          elevation: 0.0,
+          title: Center(child: Text("Add a post", style: TextStyle(color:Colors.black, fontWeight: FontWeight.w900,fontSize: 32.0),)),
+          backgroundColor:  Colors.white,
+          elevation: 10.0,
           actions: <Widget>[
             isUploading?circularProgressAppBar():uploadGestureDetector()
           ]
@@ -297,7 +324,7 @@ class _createPostState extends State<createPost> {
       body:SingleChildScrollView(
         child: Column(
           children: <Widget>[
-            SizedBox(height: 5,),
+            SizedBox(height: 35,),
             GestureDetector(
               onTap: (){
                 getImage();
