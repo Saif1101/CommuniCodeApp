@@ -12,7 +12,7 @@ class _createNewUserPageState extends State<createNewUserPage> {
   final _formKey = GlobalKey <FormState>();
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   String username;
-  String validationCheckString = "Enter Your Username";
+  String validationCheckString = "Pick a username";
 
   List<ListItem<String>> languageList = [];
 

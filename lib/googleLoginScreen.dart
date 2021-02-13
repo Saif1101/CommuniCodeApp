@@ -64,13 +64,11 @@ class _loginPageOnlyGoogleState extends State<loginPageOnlyGoogle> {
       accessToken: googleSignInAuthentication.accessToken,
       idToken: googleSignInAuthentication.idToken,
     );
-//    print("Current user id: ${currentUser.id}");
+
 
 
     final firebaseAuth.UserCredential authResult = await _auth.signInWithCredential(credential);
 
-    print("auth id token: ${googleSignInAuthentication.idToken}");
-    print("Firebase auth id: ${authResult.credential}");
 
   }
 
@@ -94,7 +92,7 @@ class _loginPageOnlyGoogleState extends State<loginPageOnlyGoogle> {
 
   handleSignIn(GoogleSignInAccount account) async {
     if(account != null){
-      print("User signed in: $account ");
+
       await createUserInFirestore();
       setState(() {
         isAuth=true;
@@ -112,7 +110,7 @@ class _loginPageOnlyGoogleState extends State<loginPageOnlyGoogle> {
     /* 1) Check if user already exists in the firebase database
     according to their ID */
     final GoogleSignInAccount user = googleSignIn.currentUser;
-    print("GoogleSignIn Account UserId which will form the base for document in firebase ${user.id}");
+
     final GoogleSignInAuthentication googleSignInAuthentication = await user.authentication;
 
     final firebaseAuth.AuthCredential credential = firebaseAuth.GoogleAuthProvider.credential(

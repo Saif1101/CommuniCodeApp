@@ -104,6 +104,7 @@ class _createPostState extends State<createPost> with AutomaticKeepAliveClientMi
       isUploading = false;
       _titleController.clear();
       _descController.clear();
+      index=0;
     });
 
   }
@@ -114,6 +115,7 @@ class _createPostState extends State<createPost> with AutomaticKeepAliveClientMi
       if(linksList[i] == 'Empty'){
         linksList.removeAt(i);
       }
+      i++;
     }
 
 
@@ -131,9 +133,9 @@ class _createPostState extends State<createPost> with AutomaticKeepAliveClientMi
 
 
   handleSubmit() async {
-    print(formInfo);
+
     cleanLinks(formInfo);
-    print(formInfo);
+
     if(selectedImage!= null && postTitle!=null && desc!= null){
       setState(() {
         isUploading=true;
@@ -421,7 +423,7 @@ class linkIconBoxField extends StatefulWidget {
 }
 
 class _linkIconBoxFieldState extends State<linkIconBoxField> {
-  final formKey = GlobalKey<FormState>();
+
   //DATA MEMBERS CONTAINING INFO ABOUT EACH ROW CREATED, The type and the image next to the type are already initiated with default values -'Select' and "White Image"
   String selectedType='Select';
   String url;
@@ -527,25 +529,25 @@ class _linkIconBoxFieldState extends State<linkIconBoxField> {
             (selectedType!=null && selectedType != 'Select')? Expanded(
               flex: 1,
               child: TextFormField(
-                key: formKey,
-                  autovalidateMode: AutovalidateMode.always,
+//                key: formKey,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
                   validator: (value){
 
-                    if(value.isEmpty || !value.contains('@') || selectedType == 'Select' || selectedType == null){
+                    if(value.isEmpty || !value.contains('http') || selectedType == 'Select' || selectedType == null){
                       return "Invalid";
                     };
                     return 'Done';
                   },
                   onChanged: (value){
                     setState(() {
-                      if(!(value.isEmpty || !value.contains('@') || selectedType == 'Select' || selectedType == null)){
+                      if(!(value.isEmpty || !value.contains('http') || selectedType == 'Select' || selectedType == null)){
                         url = value;
                       }
                       else{
                         return;
                       }
                     });
-                    print(url);
+
                       widget.parent.setState(() {
                         widget.parent.formInfo[widget.index]=(selectedType);
                         widget.parent.formInfo[widget.index+1]=(url);

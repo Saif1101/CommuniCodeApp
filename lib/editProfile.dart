@@ -216,16 +216,13 @@ class _editProfileState extends State<editProfile> {
   }
 
   updateProfileData(){
-    print("Update button tapped");
+
     List<String> newSelectedLanguages = [];
     for(int i = 0 ; i<languageList.length; i++){
       if(languageList[i].isSelected)
         newSelectedLanguages.add(languageList[i].language);
     };
-    print(newSelectedLanguages);
 
-    print("${usernameController.text}");
-    print("${userBioController.text}");
 
     setState(() {
       usernameController.text.trim().length<3||
@@ -234,15 +231,14 @@ class _editProfileState extends State<editProfile> {
       userBioController.text.trim().length>80 ||
           userBioController.text.isNotEmpty? _bioValid = false : _bioValid = true;
     });
-    print(_userNameValid);
-    print(_bioValid);
+
     if(_userNameValid && _bioValid){
       usersRef.doc(widget.currentUserID).update({
         'languages': newSelectedLanguages,
         'username': usernameController.text.trim(),
         'bio': userBioController.text.trim(),
       });
-      print("User and bio valid");
+
       SnackBar snackbar = SnackBar(backgroundColor: Colors.black,content: Text("Profile updated! Changes will be reflected when you refresh."));
       _scaffoldKey.currentState.showSnackBar(snackbar);
       Timer(Duration(seconds: 3), () {
