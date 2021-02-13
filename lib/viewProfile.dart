@@ -16,6 +16,7 @@ import 'googleLoginScreen.dart';
 import 'models/user.dart';
 import 'models/postTemplateCondensed.dart';
 
+//final viewProfileStateKey = GlobalKey<_viewProfileState>();
 
 class viewProfile extends StatefulWidget {
   final String profileID;
@@ -27,7 +28,6 @@ class viewProfile extends StatefulWidget {
 }
 
 class _viewProfileState extends State<viewProfile>  {
-
 
 
   final String currentUserId = googleSignIn.currentUser.id;
@@ -78,7 +78,7 @@ class _viewProfileState extends State<viewProfile>  {
 
 
   getProfilePosts  () async {
-    print("Getting profile posts");
+
     setState(() {
       postsLoading = true;
     });
@@ -87,13 +87,12 @@ class _viewProfileState extends State<viewProfile>  {
     .collection('userPosts')
     .orderBy('timestamp',descending: true)
     .get();
-    print("Query get complete");
-    setState(() {
-      print("Making posts from document");
-      postsList = snapshot.docs.map<Widget>((doc) => postTemplate.fromDocument(doc)).toList();
-      print("Post making complete");
-      postsLoading = false;
 
+    setState(() {
+
+      postsList = snapshot.docs.map<Widget>((doc) => postTemplate.fromDocument(doc)).toList();
+
+      postsLoading = false;
     });
   } //Querying firestore and yielding all posts by the user whose profile is being visited
 
@@ -438,7 +437,7 @@ class _viewProfileState extends State<viewProfile>  {
 
   @override
   Widget build(BuildContext context) {
-    print('${widget.profileID}');
+
     return Scaffold(
       backgroundColor: Color(0xff09031D),
         body: Stack(

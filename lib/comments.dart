@@ -54,13 +54,11 @@ class _commentModelState extends State<commentModel> {
  _commentModelState({Key key,this.hasCookie, this.username, this.userID, this.avatarURL, this.comment, this.timestamp});
 
  awardCookie() async {
-   print("current user id: ${currentUser.id}");
-   print("post owner user id: ${widget.parent.ownerID}");
-   print("comment owner user id: ${userID}");
+
    if(currentUser.id == widget.parent.ownerID && currentUser.id!=userID) {
-     print(widget.parent.cookiesLeft);
+
      buttonpressCounter += 1;
-     print("button presses $buttonpressCounter");
+
      if (buttonpressCounter <= 5) {
        if (widget.parent.cookiesLeft == 0) {
          setState(() {});
@@ -82,7 +80,8 @@ class _commentModelState extends State<commentModel> {
            widget.parent.cookiesLeft -= 1;
            await usersRef.doc(userID).update({'cookies':FieldValue.increment(1)});
          }
-         print("after press: ${widget.parent.cookiesLeft}");
+
+
          await commentsRef.doc(widget.parent.postID).collection('comments')
              .where('timestamp', isEqualTo: timestamp)
              .where('comment', isEqualTo: comment)
@@ -99,7 +98,7 @@ class _commentModelState extends State<commentModel> {
          setState(() {});
        }
      } else {
-       print("Timer Triggerd");
+
        Timer(Duration(seconds: 10), () => buttonpressCounter = 0);
      }
    }

@@ -83,7 +83,18 @@ class postTemplate extends StatelessWidget {
                   leading: Text(title, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),),
                   title: statusOval(),
                   trailing: GestureDetector(
-                    onTap: (){print("owner ID is ${ownerID}");Navigator.push(context,MaterialPageRoute(builder: (context)=> postExpanded(cookiesToAward: cookiesToAward,postStatus: postStatus, ownerID: ownerID, title: title, description: description, tags: tags, urlList: urlList, postImageUrl: postImageUrl,postID: postID,)));},
+                    onTap: (){
+
+                      Navigator.push(context, MaterialPageRoute(builder: (context)=> postExpanded(cookiesToAward: cookiesToAward,
+                          postStatus: postStatus,
+                          ownerID: ownerID,
+                          title: title,
+                          description: description,
+                          tags: tags,
+                          urlList: urlList,
+                          postImageUrl: postImageUrl,
+                          postID: postID,)));
+                    },
                     child: RadiantGradientMask(child: Icon(Icons.arrow_forward,size: 35,color: Colors.white,),),
                   ),
                 ), //Title and Read More Button that directs to an instance of postTemplateExpanded

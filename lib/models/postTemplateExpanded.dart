@@ -61,7 +61,7 @@ class _postExpandedState extends State<postExpanded> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    print("owner ID is ${ownerID}");
+
     getNumberOfComments();
     buildLinkButtonRow();
 
@@ -193,7 +193,8 @@ class _postExpandedState extends State<postExpanded> {
        doc.reference.delete();
      }
    });
-
+    Navigator.pop(context);
+    Navigator.pop(context);
  }
 
  handleDeletePost(BuildContext parentContext){
@@ -209,8 +210,9 @@ class _postExpandedState extends State<postExpanded> {
            style: TextStyle(color: Colors.white, fontSize: 20),
          ),
          onPressed: (){
-           Navigator.pop(context);
+
            deletePost();
+
          },
          width: 120,
        ),

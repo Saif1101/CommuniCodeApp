@@ -4,6 +4,8 @@ import 'package:coding_inventory/googleLoginScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
+
+
 class activityFeed extends StatefulWidget {
   @override
   _activityFeedState createState() => _activityFeedState();
@@ -101,26 +103,24 @@ class activityFeedItem extends StatelessWidget {
     );
   }
 
+
   configureMediaPreview() {
     if (type == "like" || type == 'comment') {
-      mediaPreview = GestureDetector(
-        onTap: () => print('showing post'),
-        child: Container(
-          height: 50.0,
-          width: 50.0,
-          child: AspectRatio(
-              aspectRatio: 16 / 9,
-              child: Container(
+      mediaPreview = Container(
+        height: 50.0,
+        width: 50.0,
+        child: AspectRatio(
+            aspectRatio: 16 / 9,
+            child: Container(
 
-                decoration: BoxDecoration(
-                  borderRadius:BorderRadius.all(Radius.circular(22)),
-                  image: DecorationImage(
-                    fit: BoxFit.cover,
-                    image: CachedNetworkImageProvider(mediaUrl),
-                  ),
+              decoration: BoxDecoration(
+                borderRadius:BorderRadius.all(Radius.circular(22)),
+                image: DecorationImage(
+                  fit: BoxFit.cover,
+                  image: CachedNetworkImageProvider(mediaUrl),
                 ),
-              )),
-        ),
+              ),
+            )),
       );
     } else {
       mediaPreview = Text('');
@@ -146,8 +146,7 @@ class activityFeedItem extends StatelessWidget {
         child: Card(
           elevation: 20.0,
           child: ListTile(
-            title: GestureDetector(
-              onTap: ()=> print("Show Profile"),
+            title: Container(
               child: RichText(
                 overflow:  TextOverflow.ellipsis,
                 text: TextSpan(
